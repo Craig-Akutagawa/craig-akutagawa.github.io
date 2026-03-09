@@ -1,6 +1,70 @@
-<!DOCTYPE html>
-<html>
-<body>
-  <h1>Hello World!</h1>
-</body>
-</html>
+---
+layout: home
+title: Home
+---
+
+{% assign featured_post = site.posts.first %}
+
+<section class="hero-card">
+  <p class="hero-kicker">Personal blog</p>
+  <h1>Notes on code, projects, and ideas worth keeping.</h1>
+  <p class="hero-copy">
+    This is a lightweight home base for short essays, build logs, and experiments. The structure stays intentionally
+    simple so the writing can grow first.
+  </p>
+  <div class="hero-actions">
+    <a class="button-link" href="{{ '/about/' | relative_url }}">About Me</a>
+    <a class="button-link button-link-secondary" href="{{ '/archive/' | relative_url }}">Browse Archive</a>
+  </div>
+</section>
+
+<section class="content-section">
+  <div class="section-heading">
+    <div>
+      <p class="section-label">Latest writing</p>
+      <h2>Recent Posts</h2>
+    </div>
+    <a class="text-link" href="{{ '/archive/' | relative_url }}">View all posts</a>
+  </div>
+
+  {% if site.posts and site.posts.size > 0 %}
+  <div class="post-grid">
+    {% for post in site.posts limit: 5 %}
+    <article class="post-card">
+      <p class="post-meta">{{ post.date | date: "%b %-d, %Y" }}</p>
+      <h3><a href="{{ post.url | relative_url }}">{{ post.title }}</a></h3>
+      <p>{{ post.excerpt | strip_html | truncate: 150 }}</p>
+    </article>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="empty-state">The archive is empty for now. The first post will show up here automatically.</p>
+  {% endif %}
+</section>
+
+<section class="content-section two-column">
+  <div>
+    <p class="section-label">Direction</p>
+    <h2>What this site is for</h2>
+    <p>
+      The goal is a clean personal site that can hold project notes, technical writing, and small updates without extra
+      overhead.
+    </p>
+    <p>
+      As the blog grows, this starter can expand into categories, a dedicated projects page, or a more custom visual
+      system.
+    </p>
+  </div>
+
+  <aside class="note-card">
+    <p class="section-label">Start here</p>
+    <h3>Good first clicks</h3>
+    <ul class="simple-links">
+      {% if featured_post %}
+      <li><a href="{{ featured_post.url | relative_url }}">Read the latest post</a></li>
+      {% endif %}
+      <li><a href="{{ '/about/' | relative_url }}">See the about page</a></li>
+      <li><a href="{{ '/archive/' | relative_url }}">Open the archive</a></li>
+    </ul>
+  </aside>
+</section>
