@@ -230,6 +230,11 @@
     border-bottom: 1px solid rgba(24, 50, 51, 0.08);
   }
 
+  .page-heading-post {
+    margin-bottom: 1.3rem;
+    padding-bottom: 0.95rem;
+  }
+
   .about-page .page-heading {
     margin-bottom: 1rem;
     padding-bottom: 0.85rem;
@@ -251,6 +256,10 @@
     letter-spacing: -0.024em;
     line-height: 1.04;
     text-wrap: balance;
+  }
+
+  .page-heading-post .post-date {
+    margin: 0 0 0.45rem;
   }
 
   .page-lead {
@@ -589,6 +598,40 @@
     color: var(--accent-deep);
     font-size: 0.92rem;
     font-weight: 700;
+  }
+
+  .about-contact-row {
+    display: flex;
+    gap: 0.8rem;
+    align-items: center;
+    margin-top: 1.25rem;
+  }
+
+  .about-icon-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 999px;
+    border: 1px solid rgba(24, 50, 51, 0.12);
+    background: rgba(255, 255, 255, 0.74);
+    color: var(--accent-deep);
+    box-shadow: 0 10px 20px rgba(18, 63, 67, 0.08);
+    transition: transform 140ms ease, background-color 140ms ease, color 140ms ease, border-color 140ms ease;
+  }
+
+  .about-icon-link:hover {
+    background: var(--accent-deep);
+    color: #ffffff;
+    border-color: var(--accent-deep);
+    transform: translateY(-1px);
+  }
+
+  .about-icon-link svg {
+    width: 1.45rem;
+    height: 1.45rem;
+    fill: currentColor;
   }
 
   .about-facts {
