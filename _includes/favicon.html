@@ -1,0 +1,20 @@
+<script>
+  (function () {
+    var avatarUrl = {{ site.avatar_url | jsonify }};
+    if (!avatarUrl) return;
+
+    function upsertIcon(rel, url) {
+      var link = document.head.querySelector('link[rel="' + rel + '"]');
+      if (!link) {
+        link = document.createElement('link');
+        link.rel = rel;
+        document.head.appendChild(link);
+      }
+      link.href = url;
+    }
+
+    upsertIcon('icon', avatarUrl);
+    upsertIcon('shortcut icon', avatarUrl);
+    upsertIcon('apple-touch-icon', avatarUrl);
+  })();
+</script>
