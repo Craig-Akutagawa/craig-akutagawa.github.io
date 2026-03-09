@@ -24,6 +24,7 @@
       radial-gradient(circle at bottom right, rgba(240, 195, 106, 0.16), transparent 24%),
       linear-gradient(135deg, #123f43 0%, #1f6b63 48%, #3f8c7d 100%);
     padding: 4.75rem 1rem 6rem;
+    text-align: center;
   }
 
   .project-name {
@@ -45,6 +46,8 @@
     margin-top: -3.5rem;
     max-width: 960px;
     padding: 0 1.25rem 4rem;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .main-content > :first-child {
@@ -298,9 +301,9 @@
     margin: 0;
   }
 
-  .about-hero {
+  .about-profile {
     display: grid;
-    grid-template-columns: minmax(0, 1.65fr) minmax(260px, 1fr);
+    grid-template-columns: minmax(0, 1.75fr) minmax(260px, 0.95fr);
     gap: 1rem;
     margin-bottom: 1rem;
   }
@@ -324,6 +327,50 @@
     background:
       radial-gradient(circle at top right, rgba(240, 195, 106, 0.22), transparent 30%),
       linear-gradient(180deg, rgba(228, 240, 235, 0.9), rgba(255, 255, 255, 0.98));
+  }
+
+  .about-profile-card {
+    display: grid;
+    grid-template-columns: minmax(140px, 180px) minmax(0, 1fr);
+    gap: 1.5rem;
+    align-items: center;
+  }
+
+  .about-avatar-shell {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .about-avatar-shell::before {
+    content: "";
+    position: absolute;
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.95), rgba(228, 240, 235, 0.72) 50%, rgba(31, 107, 99, 0.18) 100%);
+    transform: translate(10px, 12px);
+  }
+
+  .about-avatar {
+    position: relative;
+    width: min(100%, 172px);
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 8px solid rgba(255, 255, 255, 0.92);
+    box-shadow: 0 22px 35px rgba(18, 63, 67, 0.16);
+  }
+
+  .about-profile-copy {
+    min-width: 0;
+  }
+
+  .about-profile-note {
+    background:
+      radial-gradient(circle at top left, rgba(240, 195, 106, 0.18), transparent 32%),
+      var(--surface);
   }
 
   .about-card h1,
@@ -352,6 +399,7 @@
 
   .about-summary {
     margin-bottom: 1.1rem;
+    max-width: 34rem;
   }
 
   .about-pill-row {
@@ -436,7 +484,21 @@
   }
 
   .site-footer {
+    margin-top: 1.8rem;
+    padding-top: 0.25rem;
+  }
+
+  .site-footer-inner {
+    border-top: 1px solid rgba(24, 50, 51, 0.14);
+    padding: 1.35rem 0 0.1rem;
+    text-align: center;
     color: var(--muted);
+  }
+
+  .site-footer-inner p {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.6;
   }
 
   @media (max-width: 700px) {
@@ -453,8 +515,19 @@
     .section-heading,
     .archive-list li,
     .two-column,
-    .about-hero {
+    .about-profile,
+    .about-profile-card {
       display: block;
+    }
+
+    .about-avatar-shell {
+      margin-bottom: 1.2rem;
+    }
+
+    .about-avatar-shell::before {
+      width: 170px;
+      left: 50%;
+      transform: translate(-50%, 12px);
     }
 
     .post-meta-bar {

@@ -7,28 +7,39 @@ kicker: About
 page_class: about-page
 ---
 
-<section class="about-hero">
-  <div class="about-card about-card-primary">
-    <p class="about-eyebrow">About</p>
-    <h1>Craig Akutagawa</h1>
-    <p class="about-role">Builder, programmer, and keeper of useful notes.</p>
-    <p class="about-summary">
-      This site is a personal home base for the things I am building, learning, and revisiting. I want it to feel
-      more like a desk with a few good notebooks on it than a polished content machine.
-    </p>
-    <div class="about-pill-row">
-      <span>Code</span>
-      <span>Projects</span>
-      <span>Experiments</span>
-      <span>Writing</span>
+<section class="about-profile">
+  <div class="about-card about-card-primary about-profile-card">
+    <div class="about-avatar-shell">
+      <img class="about-avatar" src="{{ '/assets/avatar-favicon.png' | relative_url }}" alt="Profile photo of Craig Akutagawa">
+    </div>
+
+    <div class="about-profile-copy">
+      <p class="about-eyebrow">Profile</p>
+      <h1>Craig Akutagawa</h1>
+      <p class="about-role">Builder, programmer, and keeper of useful notes.</p>
+      <p class="about-summary">
+        This site is a personal home base for the things I am building, learning, and revisiting. I want it to feel
+        calm, useful, and a little more personal than a standard project log.
+      </p>
+      <div class="about-pill-row">
+        <span>Code</span>
+        <span>Projects</span>
+        <span>Experiments</span>
+        <span>Writing</span>
+      </div>
     </div>
   </div>
 
-  <aside class="about-card about-card-secondary">
-    <p class="about-eyebrow">At a glance</p>
+  <aside class="about-card about-profile-note">
+    <p class="about-eyebrow">Intent</p>
+    <h2>Why this site exists</h2>
+    <p>
+      I wanted a place where project notes, debugging lessons, and longer reflections could live together without the
+      overhead of a heavy publishing setup.
+    </p>
     <ul class="about-facts">
       <li>Writing about projects, debugging, and ideas worth keeping.</li>
-      <li>Using the site as a lightweight lab notebook for technical work.</li>
+      <li>Using the site like a lightweight lab notebook for technical work.</li>
       <li>Keeping the publishing flow simple so it stays easy to update.</li>
     </ul>
   </aside>
@@ -55,11 +66,11 @@ page_class: about-page
   </div>
 
   <div class="about-card">
-    <p class="about-eyebrow">Why this format</p>
+    <p class="about-eyebrow">Approach</p>
     <h2>Simple by design</h2>
     <p>
-      A personal site works best when the barrier to publishing stays low. This setup leaves room for the writing to
-      grow first and the structure to mature only when it earns the complexity.
+      A personal site works best when the barrier to publishing stays low. The design should support the writing,
+      not compete with it.
     </p>
   </div>
 </section>
