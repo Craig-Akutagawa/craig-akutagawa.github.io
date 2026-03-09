@@ -1,5 +1,7 @@
 
 
+
+
 <!DOCTYPE html>
 <html lang="en-US">
   <head>
@@ -7,21 +9,20 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- Begin Jekyll SEO tag v2.8.0 -->
-<title>Welcome to My Blog | Craig Akutagawa</title>
+<title>About | Craig Akutagawa</title>
 <meta name="generator" content="Jekyll v4.4.1" />
-<meta property="og:title" content="Welcome to My Blog" />
+<meta property="og:title" content="About" />
 <meta property="og:locale" content="en_US" />
-<meta name="description" content="A short note about what this site is for and how I want it to grow." />
-<meta property="og:description" content="A short note about what this site is for and how I want it to grow." />
-<link rel="canonical" href="http://localhost:4000/2026/03/09/welcome-to-my-blog/" />
-<meta property="og:url" content="http://localhost:4000/2026/03/09/welcome-to-my-blog/" />
+<meta name="description" content="A short introduction to the person behind the site and the kind of writing that will live here." />
+<meta property="og:description" content="A short introduction to the person behind the site and the kind of writing that will live here." />
+<link rel="canonical" href="https://craig-akutagawa.github.io/about/" />
+<meta property="og:url" content="https://craig-akutagawa.github.io/about/" />
 <meta property="og:site_name" content="Craig Akutagawa" />
-<meta property="og:type" content="article" />
-<meta property="article:published_time" content="2026-03-09T09:00:00+08:00" />
+<meta property="og:type" content="website" />
 <meta name="twitter:card" content="summary" />
-<meta property="twitter:title" content="Welcome to My Blog" />
+<meta property="twitter:title" content="About" />
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"BlogPosting","dateModified":"2026-03-09T09:00:00+08:00","datePublished":"2026-03-09T09:00:00+08:00","description":"A short note about what this site is for and how I want it to grow.","headline":"Welcome to My Blog","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/2026/03/09/welcome-to-my-blog/"},"url":"http://localhost:4000/2026/03/09/welcome-to-my-blog/"}</script>
+{"@context":"https://schema.org","@type":"WebSite","description":"A short introduction to the person behind the site and the kind of writing that will live here.","headline":"About","name":"Craig Akutagawa","url":"https://craig-akutagawa.github.io/about/"}</script>
 <!-- End Jekyll SEO tag -->
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -84,8 +85,15 @@
       radial-gradient(circle at top left, rgba(255, 255, 255, 0.18), transparent 28%),
       radial-gradient(circle at bottom right, rgba(240, 195, 106, 0.16), transparent 24%),
       linear-gradient(135deg, #123f43 0%, #1f6b63 48%, #3f8c7d 100%);
-    padding: 4.75rem 1rem 6rem;
     text-align: center;
+  }
+
+  .page-header-home {
+    padding: 4.75rem 1rem 6rem;
+  }
+
+  .page-header-compact {
+    padding: 2.9rem 1rem 4rem;
   }
 
   .project-name {
@@ -93,15 +101,39 @@
     font-size: clamp(2.5rem, 6vw, 4.4rem);
     letter-spacing: -0.03em;
     line-height: 1.08;
-    margin-bottom: 0.5rem;
+    margin: 0;
     text-wrap: balance;
+    text-shadow: 0 2px 0 rgba(10, 37, 39, 0.14);
+  }
+
+  .page-header-compact .project-name {
+    font-size: clamp(2.45rem, 5vw, 3.45rem);
+    line-height: 1.04;
   }
 
   .project-tagline {
-    max-width: 42rem;
-    margin: 0 auto;
+    max-width: 32rem;
+    margin: 0.9rem auto 0;
     color: rgba(255, 255, 255, 0.88);
-    font-size: 1.05rem;
+    font-size: 0.98rem;
+    line-height: 1.55;
+  }
+
+  .project-tagline:lang(ja) {
+    font-family: var(--font-cjk-serif-ja);
+    font-size: 0.94rem;
+    letter-spacing: 0.08em;
+    color: rgba(245, 248, 246, 0.9);
+  }
+
+  .page-header-compact .project-tagline {
+    margin-top: 0.78rem;
+    font-size: 0.92rem;
+  }
+
+  .page-header-compact .project-tagline:lang(ja) {
+    font-size: 0.9rem;
+    letter-spacing: 0.075em;
   }
 
   .main-content {
@@ -111,6 +143,11 @@
     padding: 0 1.25rem 4rem;
     margin-left: auto;
     margin-right: auto;
+  }
+
+  .page-interior .main-content {
+    max-width: 1180px;
+    margin-top: -2.4rem;
   }
 
   .main-content > :first-child {
@@ -134,6 +171,10 @@
     padding: 0.8rem;
     margin-bottom: 1.25rem;
     flex-wrap: wrap;
+  }
+
+  .page-interior .site-nav {
+    margin-bottom: 0.95rem;
   }
 
   .site-nav a {
@@ -319,7 +360,28 @@
   }
 
   .page-heading {
-    margin-bottom: 1.75rem;
+    margin-bottom: 1.55rem;
+    padding-bottom: 1.15rem;
+    border-bottom: 1px solid rgba(24, 50, 51, 0.08);
+  }
+
+  .page-heading .page-kicker {
+    margin: 0 0 0.7rem;
+  }
+
+  .page-heading h1 {
+    font-family: var(--font-display-mixed);
+    color: var(--accent-deep);
+    font-size: clamp(2rem, 4vw, 2.85rem);
+    line-height: 1.06;
+    letter-spacing: -0.02em;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  .page-lead {
+    max-width: 42rem;
+    margin: 0.8rem 0 0;
   }
 
   .post-meta-bar {
@@ -335,14 +397,6 @@
   .post-meta-bar .page-kicker,
   .post-meta-bar .post-date {
     margin: 0;
-  }
-
-  .page-heading .post-date {
-    margin-top: 0.35rem;
-  }
-
-  .page-heading h1 {
-    font-size: clamp(2rem, 4vw, 3rem);
   }
 
   .archive-list {
@@ -378,7 +432,7 @@
 
   .about-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 1rem;
   }
 
@@ -398,24 +452,24 @@
   }
 
   .about-profile-card {
-    padding: 1.65rem 1.75rem;
+    padding: 1.7rem 1.9rem 1.45rem;
   }
 
   .about-profile-header {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
-    gap: 1.4rem;
-    align-items: start;
+    gap: 1rem 1.75rem;
+    align-items: center;
   }
 
   .about-avatar-shell {
     position: relative;
     display: flex;
     justify-content: center;
-    align-items: flex-start;
-    width: clamp(96px, 12vw, 132px);
+    align-items: center;
+    width: clamp(118px, 14vw, 148px);
     flex-shrink: 0;
-    margin-top: 0.25rem;
+    margin-top: 0;
   }
 
   .about-avatar-shell::before {
@@ -438,40 +492,46 @@
 
   .about-profile-copy {
     min-width: 0;
-    max-width: 38rem;
+    max-width: 44rem;
   }
 
   .about-name,
   .about-card h2 {
-    margin: 0.2rem 0 0.65rem;
+    margin: 0;
   }
 
   .about-name {
-    font-size: clamp(1.8rem, 3vw, 2.45rem);
+    font-size: clamp(2.95rem, 5.5vw, 4.35rem);
     font-weight: 700;
-    line-height: 1.12;
-    margin-bottom: 0.4rem;
+    letter-spacing: -0.03em;
+    line-height: 0.94;
+    margin: 0.1rem 0 0.35rem;
   }
 
   .about-card h2 {
-    font-size: 1.55rem;
+    font-size: clamp(1.38rem, 1.9vw, 1.8rem);
+    line-height: 1.1;
+    max-width: none;
+    text-wrap: pretty;
   }
 
   .about-eyebrow {
-    margin: 0;
+    margin: 0 0 0.15rem;
   }
 
   .about-role {
     color: var(--accent);
-    font-size: 1.08rem;
+    font-size: 1.04rem;
     font-weight: 700;
     margin: 0;
     max-width: 34rem;
+    line-height: 1.55;
   }
 
   .about-summary {
-    margin: 1.15rem 0 1.1rem;
-    max-width: 42rem;
+    margin: 0.78rem 0 1rem;
+    max-width: 46rem;
+    line-height: 1.72;
   }
 
   .about-pill-row {
@@ -731,12 +791,25 @@
     .about-name {
       text-wrap: pretty;
     }
+
+    .page-header-home {
+      padding: 4rem 1rem 5rem;
+    }
+
+    .page-header-compact {
+      padding: 2.2rem 1rem 2.9rem;
+    }
+
+    .page-heading {
+      margin-bottom: 1.25rem;
+      padding-bottom: 1rem;
+    }
   }
 </style>
 
   </head>
-  <body class="page-lang-en-us" data-page-lang="en-US">
-    <header class="page-header" role="banner">
+  <body class="page-lang-en-us page-interior" data-page-lang="en-US">
+    <header class="page-header page-header-compact" role="banner">
       <h1 class="project-name">Craig Akutagawa</h1>
       <h2 class="project-tagline" lang="ja">ようこそ　クレゴの世界へ</h2>
     </header>
@@ -745,28 +818,75 @@
       <nav class="site-nav" aria-label="Primary">
     <a href="/" >Home</a>
     <a href="/archive/" >Archive</a>
-    <a href="/about/" >About</a>
+    <a href="/about/" aria-current="page" >About</a>
 </nav>
 
-<article class="page-shell post-shell" lang="en-US">
-    <div class="post-meta-bar">
-        <p class="page-kicker">Post</p>
-        <p class="post-date">March 9, 2026</p>
+
+
+<article class="page-shell about-page" lang="en-US">
+    
+    <header class="page-heading">
+        <p class="page-kicker">About</p>
+        <h1>About</h1>
+        <p class="page-lead">A short introduction to the person behind the site and the kind of writing that will live here.</p>
+    </header>
+    
+    <section class="about-profile">
+  <div class="about-card about-card-primary about-profile-card">
+    <div class="about-profile-header">
+      <div class="about-profile-copy">
+        <p class="about-eyebrow">Profile</p>
+        <p class="about-name">Craig Akutagawa</p>
+        <p class="about-role" lang="ja">ものをつくり、コードを書き、日々の発見を静かに綴っています。</p>
+      </div>
+
+      <div class="about-avatar-shell">
+        <img class="about-avatar" src="/assets/avatar-favicon.png" alt="Profile photo of Craig Akutagawa" />
+      </div>
     </div>
 
-    <p>This site starts simple on purpose.</p>
+    <p class="about-summary" lang="ja">
+      この場所は、つくっているものや学んだこと、ふと立ち止まって考えたことを置いておくための小さな拠点です。制作の記録やデバッグの覚え書き、あとで読み返したくなる思考の断片を、落ち着いたかたちで残していきます。
+    </p>
 
-<p>The first version focuses on the basics: a clear home page, an about page, and a place to publish posts without fighting the tooling. That makes it easier to build a writing habit before adding more features.</p>
+    <div class="about-pill-row">
+      <span>Code</span>
+      <span>Projects</span>
+      <span>Experiments</span>
+      <span>Writing</span>
+    </div>
+  </div>
+</section>
 
-<p>Over time, this blog can expand to include:</p>
+<section class="about-grid">
+  <div class="about-card">
+    <p class="about-eyebrow">What you will find here</p>
+    <h2>Notes that stay practical</h2>
+    <p>
+      Most posts here will start from real work: something built, something debugged, or something learned the hard
+      way and worth writing down once clearly.
+    </p>
+  </div>
 
-<ul>
-  <li>technical notes</li>
-  <li>project write-ups</li>
-  <li>small experiments worth documenting</li>
-</ul>
+  <div class="about-card">
+    <p class="about-eyebrow">Topics</p>
+    <h2>What I plan to share</h2>
+    <ul class="about-facts">
+      <li>Project notes and build logs.</li>
+      <li>Lessons from programming and debugging.</li>
+      <li>Longer reflections when a topic needs more than a quick update.</li>
+    </ul>
+  </div>
 
-<p>For now, the important part is that the structure is in place and new posts are easy to add.</p>
+  <div class="about-card">
+    <p class="about-eyebrow">Approach</p>
+    <h2>Simple by design</h2>
+    <p>
+      A personal site works best when the barrier to publishing stays low. The design should support the writing,
+      not compete with it.
+    </p>
+  </div>
+</section>
 
 </article>
 

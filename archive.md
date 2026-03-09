@@ -6,6 +6,7 @@ description: A running list of posts published on the site.
 kicker: Archive
 page_class: archive-page
 lang: en-US
+hide_page_heading: true
 ---
 
 {% if site.posts.size > 0 %}

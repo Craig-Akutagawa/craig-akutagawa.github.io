@@ -7,6 +7,7 @@ layout: default
 {% assign current_lang = page.lang | default: site.lang | default: 'en-US' %}
 
 <article class="page-shell{% if page.page_class %} {{ page.page_class }}{% endif %}" lang="{{ current_lang }}">
+    {% unless page.hide_page_heading %}
     {% if page.title or page.description or page.kicker %}
     <header class="page-heading">
         {% if page.kicker %}<p class="page-kicker">{{ page.kicker }}</p>{% endif %}
@@ -14,5 +15,6 @@ layout: default
         {% if page.description %}<p class="page-lead">{{ page.description }}</p>{% endif %}
     </header>
     {% endif %}
+    {% endunless %}
     {{ content }}
 </article>

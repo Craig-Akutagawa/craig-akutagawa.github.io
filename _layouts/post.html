@@ -4,11 +4,17 @@ layout: default
 
 {% include site-nav.html %}
 
-<article class="page-shell post-shell" lang="{{ page.lang | default: site.lang | default: 'en-US' }}">
-    <div class="post-meta-bar">
-        <p class="page-kicker">Post</p>
-        <p class="post-date">{{ page.date | date: "%B %-d, %Y" }}</p>
-    </div>
+{% assign current_lang = page.lang | default: site.lang | default: 'en-US' %}
+
+<article class="page-shell post-shell" lang="{{ current_lang }}">
+    <header class="page-heading page-heading-post">
+        <div class="page-heading-meta">
+            <p class="page-kicker">Post</p>
+            <p class="post-date">{{ page.date | date: "%B %-d, %Y" }}</p>
+        </div>
+        <h1>{{ page.title }}</h1>
+        {% if page.excerpt %}<p class="page-lead">{{ page.excerpt }}</p>{% endif %}
+    </header>
 
     {{ content }}
 </article>
