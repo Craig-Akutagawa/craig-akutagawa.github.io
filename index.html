@@ -30,7 +30,7 @@ lang: en-US
 
   {% if site.posts and site.posts.size > 0 %}
   <div class="post-grid">
-    {% for post in site.posts limit: 5 %}
+    {% for post in site.posts limit: 3 %}
     <article class="post-card">
       <p class="post-meta">{{ post.date | date: "%b %-d, %Y" }}</p>
       <h3><a href="{{ post.url | relative_url }}">{{ post.title }}</a></h3>
