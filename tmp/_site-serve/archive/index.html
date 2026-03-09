@@ -230,10 +230,22 @@
     border-radius: 999px;
     background: var(--accent-deep);
     color: #ffffff;
+    border: 1px solid rgba(8, 35, 37, 0.18);
   }
 
   .button-link:hover {
     background: #0d3133;
+  }
+
+  .hero-actions .button-link:not(.button-link-secondary) {
+    background: linear-gradient(180deg, #14545a 0%, #0f4348 100%);
+    color: #f8fbfa;
+    box-shadow: 0 10px 20px rgba(18, 63, 67, 0.14);
+  }
+
+  .hero-actions .button-link:not(.button-link-secondary):hover {
+    background: linear-gradient(180deg, #186168 0%, #11494f 100%);
+    color: #ffffff;
   }
 
   .button-link-secondary {

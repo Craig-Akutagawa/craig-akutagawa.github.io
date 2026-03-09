@@ -230,10 +230,22 @@
     border-radius: 999px;
     background: var(--accent-deep);
     color: #ffffff;
+    border: 1px solid rgba(8, 35, 37, 0.18);
   }
 
   .button-link:hover {
     background: #0d3133;
+  }
+
+  .hero-actions .button-link:not(.button-link-secondary) {
+    background: linear-gradient(180deg, #14545a 0%, #0f4348 100%);
+    color: #f8fbfa;
+    box-shadow: 0 10px 20px rgba(18, 63, 67, 0.14);
+  }
+
+  .hero-actions .button-link:not(.button-link-secondary):hover {
+    background: linear-gradient(180deg, #186168 0%, #11494f 100%);
+    color: #ffffff;
   }
 
   .button-link-secondary {
@@ -265,6 +277,11 @@
     border-bottom: 1px solid rgba(24, 50, 51, 0.08);
   }
 
+  .page-heading-post {
+    margin-bottom: 1.3rem;
+    padding-bottom: 0.95rem;
+  }
+
   .about-page .page-heading {
     margin-bottom: 1rem;
     padding-bottom: 0.85rem;
@@ -286,6 +303,10 @@
     letter-spacing: -0.024em;
     line-height: 1.04;
     text-wrap: balance;
+  }
+
+  .page-heading-post .post-date {
+    margin: 0 0 0.45rem;
   }
 
   .page-lead {
@@ -626,6 +647,40 @@
     font-weight: 700;
   }
 
+  .about-contact-row {
+    display: flex;
+    gap: 0.8rem;
+    align-items: center;
+    margin-top: 1.25rem;
+  }
+
+  .about-icon-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 999px;
+    border: 1px solid rgba(24, 50, 51, 0.12);
+    background: rgba(255, 255, 255, 0.74);
+    color: var(--accent-deep);
+    box-shadow: 0 10px 20px rgba(18, 63, 67, 0.08);
+    transition: transform 140ms ease, background-color 140ms ease, color 140ms ease, border-color 140ms ease;
+  }
+
+  .about-icon-link:hover {
+    background: var(--accent-deep);
+    color: #ffffff;
+    border-color: var(--accent-deep);
+    transform: translateY(-1px);
+  }
+
+  .about-icon-link svg {
+    width: 1.45rem;
+    height: 1.45rem;
+    fill: currentColor;
+  }
+
   .about-facts {
     list-style: none;
     margin: 0.2rem 0 0;
@@ -769,15 +824,15 @@
 <article class="page-shell archive-page" lang="en-US">
     
     
-    <header class="page-heading">
-        <p class="page-kicker">Archive</p>
-        <h1>Archive</h1>
-        <p class="page-lead">A running list of posts published on the site.</p>
-    </header>
-    
-    
-    
 <ul class="archive-list archive-timeline">
+  
+  <li class="archive-item">
+    <span class="archive-date">Mar 9, 2026</span>
+    <div class="archive-entry">
+      <a href="/2026/03/09/where-is-my-pork-burger/">我的猪猪堡呢？？</a>
+      <p>我爱南苏</p>
+    </div>
+  </li>
   
   <li class="archive-item">
     <span class="archive-date">Mar 9, 2026</span>
