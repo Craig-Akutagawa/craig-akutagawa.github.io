@@ -27,8 +27,12 @@ layout: post
 title: A New Post
 date: 2026-03-09 09:00:00 +0800
 excerpt: A short summary for cards and archive previews.
+lang: en-US
 ---
 ```
+
+For pages or posts written primarily in Chinese or Japanese, set `lang` in the front matter to `zh-Hant`, `zh-Hans`, or `ja`.
+When a single page mixes languages, wrap the specific phrase, sentence, or section with a matching `lang` attribute so the CJK typography rules can apply correctly, for example `<span lang="ja">...</span>` or `<div lang="zh-Hant">...</div>`.
 
 ## Content and design notes
 

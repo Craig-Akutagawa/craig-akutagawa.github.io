@@ -10,12 +10,39 @@
     --accent-deep: #123f43;
     --accent-soft: #e4f0eb;
     --shadow: 0 20px 45px rgba(18, 63, 67, 0.12);
+    --font-sans-latin: "Aptos", "Trebuchet MS", "Segoe UI", sans-serif;
+    --font-serif-latin: "Iowan Old Style", "Palatino Linotype", Georgia, "Times New Roman", serif;
+    --font-cjk-sans-hant: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", "Noto Sans JP", "Hiragino Sans",
+      "Yu Gothic", "Meiryo", sans-serif;
+    --font-cjk-sans-hans: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", "Noto Sans TC", "Noto Sans JP",
+      "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
+    --font-cjk-sans-ja: "Noto Sans JP", "Hiragino Sans", "Yu Gothic", "Meiryo", "Noto Sans TC",
+      "PingFang TC", sans-serif;
+    --font-cjk-serif-hant: "Noto Serif TC", "Source Han Serif TC", "PMingLiU", "Noto Serif JP",
+      "Hiragino Mincho ProN", "Yu Mincho", serif;
+    --font-cjk-serif-hans: "Noto Serif SC", "Songti SC", "STSong", "Noto Serif TC", "Noto Serif JP",
+      "Hiragino Mincho ProN", "Yu Mincho", serif;
+    --font-cjk-serif-ja: "Noto Serif JP", "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif TC",
+      "Source Han Serif TC", serif;
+    --font-ui-mixed: "Aptos", "Trebuchet MS", "Segoe UI", "Noto Sans TC", "Noto Sans SC", "Noto Sans JP",
+      "PingFang TC", "PingFang SC", "Microsoft JhengHei", "Microsoft YaHei", "Hiragino Sans", "Yu Gothic",
+      "Meiryo", sans-serif;
+    --font-display-mixed: "Iowan Old Style", "Palatino Linotype", Georgia, "Times New Roman", "Noto Serif TC",
+      "Noto Serif SC", "Noto Serif JP", "Source Han Serif TC", "PMingLiU", "Hiragino Mincho ProN",
+      "Yu Mincho", serif;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
   }
 
   body {
     background: linear-gradient(180deg, #efe7d5 0%, var(--page-bg) 32%, #fbfaf6 100%);
     color: var(--text);
-    font-family: "Aptos", "Trebuchet MS", sans-serif;
+    font-family: var(--font-ui-mixed);
+    line-height: 1.72;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: "kern" 1, "liga" 1;
   }
 
   .page-header {
@@ -28,10 +55,12 @@
   }
 
   .project-name {
-    font-family: Georgia, "Times New Roman", serif;
+    font-family: var(--font-display-mixed);
     font-size: clamp(2.5rem, 6vw, 4.4rem);
     letter-spacing: -0.03em;
+    line-height: 1.08;
     margin-bottom: 0.5rem;
+    text-wrap: balance;
   }
 
   .project-tagline {
@@ -80,6 +109,7 @@
     border-radius: 999px;
     font-size: 0.95rem;
     font-weight: 600;
+    white-space: nowrap;
   }
 
   .site-nav a:hover,
@@ -114,9 +144,10 @@
   .about-card h1,
   .about-card h2,
   .archive-entry a {
-    font-family: Georgia, "Times New Roman", serif;
+    font-family: var(--font-display-mixed);
     color: var(--accent-deep);
     letter-spacing: -0.025em;
+    text-wrap: balance;
   }
 
   .hero-card h1 {
@@ -134,6 +165,7 @@
     color: var(--text);
     font-size: 1.04rem;
     line-height: 1.75;
+    overflow-wrap: break-word;
   }
 
   .hero-actions {
@@ -302,9 +334,6 @@
   }
 
   .about-profile {
-    display: grid;
-    grid-template-columns: minmax(0, 1.75fr) minmax(260px, 0.95fr);
-    gap: 1rem;
     margin-bottom: 1rem;
   }
 
@@ -325,52 +354,52 @@
 
   .about-card-primary {
     background:
-      radial-gradient(circle at top right, rgba(240, 195, 106, 0.22), transparent 30%),
+      radial-gradient(circle at top right, rgba(240, 195, 106, 0.2), transparent 30%),
       linear-gradient(180deg, rgba(228, 240, 235, 0.9), rgba(255, 255, 255, 0.98));
   }
 
   .about-profile-card {
+    padding: 1.65rem 1.75rem;
+  }
+
+  .about-profile-header {
     display: grid;
-    grid-template-columns: minmax(140px, 180px) minmax(0, 1fr);
-    gap: 1.5rem;
-    align-items: center;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 1.4rem;
+    align-items: start;
   }
 
   .about-avatar-shell {
     position: relative;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
+    width: clamp(96px, 12vw, 132px);
+    flex-shrink: 0;
+    margin-top: 0.25rem;
   }
 
   .about-avatar-shell::before {
     content: "";
     position: absolute;
-    width: 100%;
-    aspect-ratio: 1;
+    inset: 10px -4px -6px 10px;
     border-radius: 50%;
-    background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.95), rgba(228, 240, 235, 0.72) 50%, rgba(31, 107, 99, 0.18) 100%);
-    transform: translate(10px, 12px);
+    background: radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.92), rgba(228, 240, 235, 0.64) 58%, rgba(31, 107, 99, 0.16) 100%);
   }
 
   .about-avatar {
     position: relative;
-    width: min(100%, 172px);
+    width: 100%;
     aspect-ratio: 1;
     object-fit: cover;
     border-radius: 50%;
-    border: 8px solid rgba(255, 255, 255, 0.92);
-    box-shadow: 0 22px 35px rgba(18, 63, 67, 0.16);
+    border: 6px solid rgba(255, 255, 255, 0.9);
+    box-shadow: 0 18px 28px rgba(18, 63, 67, 0.14);
   }
 
   .about-profile-copy {
     min-width: 0;
-  }
-
-  .about-profile-note {
-    background:
-      radial-gradient(circle at top left, rgba(240, 195, 106, 0.18), transparent 32%),
-      var(--surface);
+    max-width: 38rem;
   }
 
   .about-card h1,
@@ -379,7 +408,9 @@
   }
 
   .about-card h1 {
-    font-size: clamp(2rem, 4vw, 3rem);
+    font-size: clamp(2.35rem, 5vw, 4.1rem);
+    line-height: 0.98;
+    margin-bottom: 0.4rem;
   }
 
   .about-card h2 {
@@ -392,14 +423,15 @@
 
   .about-role {
     color: var(--accent);
-    font-size: 1.1rem;
+    font-size: 1.08rem;
     font-weight: 700;
-    margin: 0 0 0.85rem;
+    margin: 0;
+    max-width: 34rem;
   }
 
   .about-summary {
-    margin-bottom: 1.1rem;
-    max-width: 34rem;
+    margin: 1.15rem 0 1.1rem;
+    max-width: 42rem;
   }
 
   .about-pill-row {
@@ -501,6 +533,94 @@
     line-height: 1.6;
   }
 
+  html:lang(zh) body,
+  html:lang(zh-Hant) body {
+    font-family: var(--font-cjk-sans-hant);
+  }
+
+  html:lang(zh-Hans) body {
+    font-family: var(--font-cjk-sans-hans);
+  }
+
+  html:lang(ja) body {
+    font-family: var(--font-cjk-sans-ja);
+  }
+
+  :lang(zh) :is(.project-name, .hero-card h1, .section-heading h2, .page-heading h1, .post-card h3, .about-card h1, .about-card h2, .archive-entry a),
+  :lang(zh-Hant) :is(.project-name, .hero-card h1, .section-heading h2, .page-heading h1, .post-card h3, .about-card h1, .about-card h2, .archive-entry a),
+  :is(.project-name, .hero-card h1, .section-heading h2, .page-heading h1, .post-card h3, .about-card h1, .about-card h2, .archive-entry a):lang(zh),
+  :is(.project-name, .hero-card h1, .section-heading h2, .page-heading h1, .post-card h3, .about-card h1, .about-card h2, .archive-entry a):lang(zh-Hant) {
+    font-family: var(--font-cjk-serif-hant);
+    letter-spacing: 0;
+    line-height: 1.2;
+    line-break: loose;
+  }
+
+  :lang(zh-Hans) :is(.project-name, .hero-card h1, .section-heading h2, .page-heading h1, .post-card h3, .about-card h1, .about-card h2, .archive-entry a),
+  :is(.project-name, .hero-card h1, .section-heading h2, .page-heading h1, .post-card h3, .about-card h1, .about-card h2, .archive-entry a):lang(zh-Hans) {
+    font-family: var(--font-cjk-serif-hans);
+    letter-spacing: 0;
+    line-height: 1.2;
+    line-break: loose;
+  }
+
+  :lang(ja) :is(.project-name, .hero-card h1, .section-heading h2, .page-heading h1, .post-card h3, .about-card h1, .about-card h2, .archive-entry a),
+  :is(.project-name, .hero-card h1, .section-heading h2, .page-heading h1, .post-card h3, .about-card h1, .about-card h2, .archive-entry a):lang(ja) {
+    font-family: var(--font-cjk-serif-ja);
+    letter-spacing: 0;
+    line-height: 1.2;
+    line-break: loose;
+  }
+
+  :lang(zh) :is(.hero-kicker, .section-label, .page-kicker, .post-date, .post-meta, .archive-date, .about-eyebrow, .site-nav a, .button-link, .text-link),
+  :lang(zh-Hant) :is(.hero-kicker, .section-label, .page-kicker, .post-date, .post-meta, .archive-date, .about-eyebrow, .site-nav a, .button-link, .text-link),
+  :is(.hero-kicker, .section-label, .page-kicker, .post-date, .post-meta, .archive-date, .about-eyebrow, .site-nav a, .button-link, .text-link):lang(zh),
+  :is(.hero-kicker, .section-label, .page-kicker, .post-date, .post-meta, .archive-date, .about-eyebrow, .site-nav a, .button-link, .text-link):lang(zh-Hant) {
+    font-family: var(--font-cjk-sans-hant);
+    letter-spacing: 0.04em;
+    text-transform: none;
+  }
+
+  :lang(zh-Hans) :is(.hero-kicker, .section-label, .page-kicker, .post-date, .post-meta, .archive-date, .about-eyebrow, .site-nav a, .button-link, .text-link),
+  :is(.hero-kicker, .section-label, .page-kicker, .post-date, .post-meta, .archive-date, .about-eyebrow, .site-nav a, .button-link, .text-link):lang(zh-Hans) {
+    font-family: var(--font-cjk-sans-hans);
+    letter-spacing: 0.04em;
+    text-transform: none;
+  }
+
+  :lang(ja) :is(.hero-kicker, .section-label, .page-kicker, .post-date, .post-meta, .archive-date, .about-eyebrow, .site-nav a, .button-link, .text-link),
+  :is(.hero-kicker, .section-label, .page-kicker, .post-date, .post-meta, .archive-date, .about-eyebrow, .site-nav a, .button-link, .text-link):lang(ja) {
+    font-family: var(--font-cjk-sans-ja);
+    letter-spacing: 0.04em;
+    text-transform: none;
+  }
+
+  :lang(zh) :is(.hero-copy, .page-lead, .post-card p, .note-card p, .main-content p, .main-content li, .archive-entry p, .project-tagline, .about-role, .about-pill-row span),
+  :lang(zh-Hant) :is(.hero-copy, .page-lead, .post-card p, .note-card p, .main-content p, .main-content li, .archive-entry p, .project-tagline, .about-role, .about-pill-row span),
+  :is(.hero-copy, .page-lead, .post-card p, .note-card p, .main-content p, .main-content li, .archive-entry p, .project-tagline, .about-role, .about-pill-row span):lang(zh),
+  :is(.hero-copy, .page-lead, .post-card p, .note-card p, .main-content p, .main-content li, .archive-entry p, .project-tagline, .about-role, .about-pill-row span):lang(zh-Hant) {
+    font-family: var(--font-cjk-sans-hant);
+    letter-spacing: 0.01em;
+    line-height: 1.9;
+    line-break: loose;
+  }
+
+  :lang(zh-Hans) :is(.hero-copy, .page-lead, .post-card p, .note-card p, .main-content p, .main-content li, .archive-entry p, .project-tagline, .about-role, .about-pill-row span),
+  :is(.hero-copy, .page-lead, .post-card p, .note-card p, .main-content p, .main-content li, .archive-entry p, .project-tagline, .about-role, .about-pill-row span):lang(zh-Hans) {
+    font-family: var(--font-cjk-sans-hans);
+    letter-spacing: 0.01em;
+    line-height: 1.9;
+    line-break: loose;
+  }
+
+  :lang(ja) :is(.hero-copy, .page-lead, .post-card p, .note-card p, .main-content p, .main-content li, .archive-entry p, .project-tagline, .about-role, .about-pill-row span),
+  :is(.hero-copy, .page-lead, .post-card p, .note-card p, .main-content p, .main-content li, .archive-entry p, .project-tagline, .about-role, .about-pill-row span):lang(ja) {
+    font-family: var(--font-cjk-sans-ja);
+    letter-spacing: 0.01em;
+    line-height: 1.9;
+    line-break: loose;
+  }
+
   @media (max-width: 700px) {
     .main-content {
       padding: 0 0.85rem 3rem;
@@ -514,20 +634,23 @@
 
     .section-heading,
     .archive-list li,
-    .two-column,
-    .about-profile,
-    .about-profile-card {
+    .two-column {
       display: block;
     }
 
+    .about-profile-header {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+
     .about-avatar-shell {
-      margin-bottom: 1.2rem;
+      width: 116px;
+      margin: 0 auto 0.25rem;
+      order: -1;
     }
 
     .about-avatar-shell::before {
-      width: 170px;
-      left: 50%;
-      transform: translate(-50%, 12px);
+      inset: 8px -4px -6px 8px;
     }
 
     .post-meta-bar {
@@ -554,6 +677,19 @@
 
     .archive-entry {
       margin-top: 0.45rem;
+    }
+
+    .site-nav a,
+    .button-link {
+      padding-inline: 0.85rem;
+      font-size: 0.92rem;
+    }
+
+    .project-name,
+    .hero-card h1,
+    .page-heading h1,
+    .about-card h1 {
+      text-wrap: pretty;
     }
   }
 </style>

@@ -3,6 +3,7 @@ layout: post
 title: Welcome to My Blog
 date: 2026-03-09 09:00:00 +0800
 excerpt: A short note about what this site is for and how I want it to grow.
+lang: en-US
 ---
 
 This site starts simple on purpose.

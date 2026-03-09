@@ -4,6 +4,6 @@ layout: default
 
 {% include site-nav.html %}
 
-<article class="page-shell{% if page.page_class %} {{ page.page_class }}{% endif %}">
+<article class="page-shell{% if page.page_class %} {{ page.page_class }}{% endif %}" lang="{{ page.lang | default: site.lang | default: 'en-US' }}">
     {{ content }}
 </article>
