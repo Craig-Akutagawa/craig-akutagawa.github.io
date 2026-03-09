@@ -13,7 +13,7 @@ lang: en-US
     <div class="about-profile-header">
       <div class="about-profile-copy">
         <p class="about-eyebrow">Profile</p>
-        <h1>Craig Akutagawa</h1>
+        <p class="about-name">Craig Akutagawa</p>
         <p class="about-role">Builder, programmer, and keeper of useful notes.</p>
       </div>
 

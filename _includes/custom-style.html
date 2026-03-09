@@ -84,7 +84,7 @@
   }
 
   .site-nav,
-  .hero-card,
+  .page-intro,
   .content-section,
   .page-shell {
     background: var(--surface);
@@ -117,13 +117,13 @@
     background: var(--accent-soft);
   }
 
-  .hero-card {
+  .page-intro {
     padding: 2rem;
     margin-bottom: 1.25rem;
     background: linear-gradient(140deg, rgba(240, 195, 106, 0.18), rgba(240, 195, 106, 0) 34%), var(--surface);
   }
 
-  .hero-kicker,
+  .page-intro-kicker,
   .section-label,
   .page-kicker,
   .post-date,
@@ -137,11 +137,11 @@
     color: var(--muted);
   }
 
-  .hero-card h1,
+  .page-intro-title,
   .section-heading h2,
   .page-heading h1,
   .post-card h3,
-  .about-card h1,
+  .about-name,
   .about-card h2,
   .archive-entry a {
     font-family: var(--font-display-mixed);
@@ -150,13 +150,13 @@
     text-wrap: balance;
   }
 
-  .hero-card h1 {
+  .page-intro-title {
     font-size: clamp(2rem, 4vw, 3.5rem);
     line-height: 1.05;
     margin: 0.35rem 0 0.9rem;
   }
 
-  .hero-copy,
+  .page-intro-copy,
   .page-lead,
   .post-card p,
   .note-card p,
@@ -166,6 +166,11 @@
     font-size: 1.04rem;
     line-height: 1.75;
     overflow-wrap: break-word;
+  }
+
+  .page-intro-copy {
+    margin: 0;
+    max-width: 42rem;
   }
 
   .hero-actions {
@@ -402,15 +407,15 @@
     max-width: 38rem;
   }
 
-  .about-card h1,
+  .about-name,
   .about-card h2 {
     margin: 0.2rem 0 0.65rem;
   }
 
-  .about-card h1 {
-    font-size: clamp(2.5rem, 6vw, 4.4rem);
+  .about-name {
+    font-size: clamp(1.8rem, 3vw, 2.45rem);
     font-weight: 700;
-    line-height: 1.08;
+    line-height: 1.12;
     margin-bottom: 0.4rem;
   }
 
@@ -547,75 +552,75 @@
     font-family: var(--font-cjk-sans-ja);
   }
 
-  :lang(zh) :is(.project-name, .hero-card h1, .section-heading h2, .page-heading h1, .post-card h3, .about-card h1, .about-card h2, .archive-entry a),
-  :lang(zh-Hant) :is(.project-name, .hero-card h1, .section-heading h2, .page-heading h1, .post-card h3, .about-card h1, .about-card h2, .archive-entry a),
-  :is(.project-name, .hero-card h1, .section-heading h2, .page-heading h1, .post-card h3, .about-card h1, .about-card h2, .archive-entry a):lang(zh),
-  :is(.project-name, .hero-card h1, .section-heading h2, .page-heading h1, .post-card h3, .about-card h1, .about-card h2, .archive-entry a):lang(zh-Hant) {
+  :lang(zh) :is(.project-name, .page-intro-title, .section-heading h2, .page-heading h1, .post-card h3, .about-name, .about-card h2, .archive-entry a),
+  :lang(zh-Hant) :is(.project-name, .page-intro-title, .section-heading h2, .page-heading h1, .post-card h3, .about-name, .about-card h2, .archive-entry a),
+  :is(.project-name, .page-intro-title, .section-heading h2, .page-heading h1, .post-card h3, .about-name, .about-card h2, .archive-entry a):lang(zh),
+  :is(.project-name, .page-intro-title, .section-heading h2, .page-heading h1, .post-card h3, .about-name, .about-card h2, .archive-entry a):lang(zh-Hant) {
     font-family: var(--font-cjk-serif-hant);
     letter-spacing: 0;
     line-height: 1.2;
     line-break: loose;
   }
 
-  :lang(zh-Hans) :is(.project-name, .hero-card h1, .section-heading h2, .page-heading h1, .post-card h3, .about-card h1, .about-card h2, .archive-entry a),
-  :is(.project-name, .hero-card h1, .section-heading h2, .page-heading h1, .post-card h3, .about-card h1, .about-card h2, .archive-entry a):lang(zh-Hans) {
+  :lang(zh-Hans) :is(.project-name, .page-intro-title, .section-heading h2, .page-heading h1, .post-card h3, .about-name, .about-card h2, .archive-entry a),
+  :is(.project-name, .page-intro-title, .section-heading h2, .page-heading h1, .post-card h3, .about-name, .about-card h2, .archive-entry a):lang(zh-Hans) {
     font-family: var(--font-cjk-serif-hans);
     letter-spacing: 0;
     line-height: 1.2;
     line-break: loose;
   }
 
-  :lang(ja) :is(.project-name, .hero-card h1, .section-heading h2, .page-heading h1, .post-card h3, .about-card h1, .about-card h2, .archive-entry a),
-  :is(.project-name, .hero-card h1, .section-heading h2, .page-heading h1, .post-card h3, .about-card h1, .about-card h2, .archive-entry a):lang(ja) {
+  :lang(ja) :is(.project-name, .page-intro-title, .section-heading h2, .page-heading h1, .post-card h3, .about-name, .about-card h2, .archive-entry a),
+  :is(.project-name, .page-intro-title, .section-heading h2, .page-heading h1, .post-card h3, .about-name, .about-card h2, .archive-entry a):lang(ja) {
     font-family: var(--font-cjk-serif-ja);
     letter-spacing: 0;
     line-height: 1.2;
     line-break: loose;
   }
 
-  :lang(zh) :is(.hero-kicker, .section-label, .page-kicker, .post-date, .post-meta, .archive-date, .about-eyebrow, .site-nav a, .button-link, .text-link),
-  :lang(zh-Hant) :is(.hero-kicker, .section-label, .page-kicker, .post-date, .post-meta, .archive-date, .about-eyebrow, .site-nav a, .button-link, .text-link),
-  :is(.hero-kicker, .section-label, .page-kicker, .post-date, .post-meta, .archive-date, .about-eyebrow, .site-nav a, .button-link, .text-link):lang(zh),
-  :is(.hero-kicker, .section-label, .page-kicker, .post-date, .post-meta, .archive-date, .about-eyebrow, .site-nav a, .button-link, .text-link):lang(zh-Hant) {
+  :lang(zh) :is(.page-intro-kicker, .section-label, .page-kicker, .post-date, .post-meta, .archive-date, .about-eyebrow, .site-nav a, .button-link, .text-link),
+  :lang(zh-Hant) :is(.page-intro-kicker, .section-label, .page-kicker, .post-date, .post-meta, .archive-date, .about-eyebrow, .site-nav a, .button-link, .text-link),
+  :is(.page-intro-kicker, .section-label, .page-kicker, .post-date, .post-meta, .archive-date, .about-eyebrow, .site-nav a, .button-link, .text-link):lang(zh),
+  :is(.page-intro-kicker, .section-label, .page-kicker, .post-date, .post-meta, .archive-date, .about-eyebrow, .site-nav a, .button-link, .text-link):lang(zh-Hant) {
     font-family: var(--font-cjk-sans-hant);
     letter-spacing: 0.04em;
     text-transform: none;
   }
 
-  :lang(zh-Hans) :is(.hero-kicker, .section-label, .page-kicker, .post-date, .post-meta, .archive-date, .about-eyebrow, .site-nav a, .button-link, .text-link),
-  :is(.hero-kicker, .section-label, .page-kicker, .post-date, .post-meta, .archive-date, .about-eyebrow, .site-nav a, .button-link, .text-link):lang(zh-Hans) {
+  :lang(zh-Hans) :is(.page-intro-kicker, .section-label, .page-kicker, .post-date, .post-meta, .archive-date, .about-eyebrow, .site-nav a, .button-link, .text-link),
+  :is(.page-intro-kicker, .section-label, .page-kicker, .post-date, .post-meta, .archive-date, .about-eyebrow, .site-nav a, .button-link, .text-link):lang(zh-Hans) {
     font-family: var(--font-cjk-sans-hans);
     letter-spacing: 0.04em;
     text-transform: none;
   }
 
-  :lang(ja) :is(.hero-kicker, .section-label, .page-kicker, .post-date, .post-meta, .archive-date, .about-eyebrow, .site-nav a, .button-link, .text-link),
-  :is(.hero-kicker, .section-label, .page-kicker, .post-date, .post-meta, .archive-date, .about-eyebrow, .site-nav a, .button-link, .text-link):lang(ja) {
+  :lang(ja) :is(.page-intro-kicker, .section-label, .page-kicker, .post-date, .post-meta, .archive-date, .about-eyebrow, .site-nav a, .button-link, .text-link),
+  :is(.page-intro-kicker, .section-label, .page-kicker, .post-date, .post-meta, .archive-date, .about-eyebrow, .site-nav a, .button-link, .text-link):lang(ja) {
     font-family: var(--font-cjk-sans-ja);
     letter-spacing: 0.04em;
     text-transform: none;
   }
 
-  :lang(zh) :is(.hero-copy, .page-lead, .post-card p, .note-card p, .main-content p, .main-content li, .archive-entry p, .project-tagline, .about-role, .about-pill-row span),
-  :lang(zh-Hant) :is(.hero-copy, .page-lead, .post-card p, .note-card p, .main-content p, .main-content li, .archive-entry p, .project-tagline, .about-role, .about-pill-row span),
-  :is(.hero-copy, .page-lead, .post-card p, .note-card p, .main-content p, .main-content li, .archive-entry p, .project-tagline, .about-role, .about-pill-row span):lang(zh),
-  :is(.hero-copy, .page-lead, .post-card p, .note-card p, .main-content p, .main-content li, .archive-entry p, .project-tagline, .about-role, .about-pill-row span):lang(zh-Hant) {
+  :lang(zh) :is(.page-intro-copy, .page-lead, .post-card p, .note-card p, .main-content p, .main-content li, .archive-entry p, .project-tagline, .about-role, .about-pill-row span),
+  :lang(zh-Hant) :is(.page-intro-copy, .page-lead, .post-card p, .note-card p, .main-content p, .main-content li, .archive-entry p, .project-tagline, .about-role, .about-pill-row span),
+  :is(.page-intro-copy, .page-lead, .post-card p, .note-card p, .main-content p, .main-content li, .archive-entry p, .project-tagline, .about-role, .about-pill-row span):lang(zh),
+  :is(.page-intro-copy, .page-lead, .post-card p, .note-card p, .main-content p, .main-content li, .archive-entry p, .project-tagline, .about-role, .about-pill-row span):lang(zh-Hant) {
     font-family: var(--font-cjk-sans-hant);
     letter-spacing: 0.01em;
     line-height: 1.9;
     line-break: loose;
   }
 
-  :lang(zh-Hans) :is(.hero-copy, .page-lead, .post-card p, .note-card p, .main-content p, .main-content li, .archive-entry p, .project-tagline, .about-role, .about-pill-row span),
-  :is(.hero-copy, .page-lead, .post-card p, .note-card p, .main-content p, .main-content li, .archive-entry p, .project-tagline, .about-role, .about-pill-row span):lang(zh-Hans) {
+  :lang(zh-Hans) :is(.page-intro-copy, .page-lead, .post-card p, .note-card p, .main-content p, .main-content li, .archive-entry p, .project-tagline, .about-role, .about-pill-row span),
+  :is(.page-intro-copy, .page-lead, .post-card p, .note-card p, .main-content p, .main-content li, .archive-entry p, .project-tagline, .about-role, .about-pill-row span):lang(zh-Hans) {
     font-family: var(--font-cjk-sans-hans);
     letter-spacing: 0.01em;
     line-height: 1.9;
     line-break: loose;
   }
 
-  :lang(ja) :is(.hero-copy, .page-lead, .post-card p, .note-card p, .main-content p, .main-content li, .archive-entry p, .project-tagline, .about-role, .about-pill-row span),
-  :is(.hero-copy, .page-lead, .post-card p, .note-card p, .main-content p, .main-content li, .archive-entry p, .project-tagline, .about-role, .about-pill-row span):lang(ja) {
+  :lang(ja) :is(.page-intro-copy, .page-lead, .post-card p, .note-card p, .main-content p, .main-content li, .archive-entry p, .project-tagline, .about-role, .about-pill-row span),
+  :is(.page-intro-copy, .page-lead, .post-card p, .note-card p, .main-content p, .main-content li, .archive-entry p, .project-tagline, .about-role, .about-pill-row span):lang(ja) {
     font-family: var(--font-cjk-sans-ja);
     letter-spacing: 0.01em;
     line-height: 1.9;
@@ -629,7 +634,7 @@
 
     .content-section,
     .page-shell,
-    .hero-card {
+    .page-intro {
       padding: 1.35rem;
     }
 
@@ -687,9 +692,9 @@
     }
 
     .project-name,
-    .hero-card h1,
+    .page-intro-title,
     .page-heading h1,
-    .about-card h1 {
+    .about-name {
       text-wrap: pretty;
     }
   }
