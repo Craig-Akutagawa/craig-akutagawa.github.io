@@ -44,11 +44,6 @@ powershell -ExecutionPolicy Bypass -File .\tools\start-post-composer.ps1
 
 Then open the local page in your browser, fill in the form, and save directly into `_posts`.
 
-For the easiest Windows workflow, just double-click:
-
-- `Open Post Composer.cmd`
-- `Close Post Composer.cmd`
-
 Security model:
 
 - The composer lives under `tools/` and is excluded from the published Jekyll site.

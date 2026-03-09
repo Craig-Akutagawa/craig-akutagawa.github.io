@@ -8,3 +8,8 @@ theme: jekyll-theme-cayman
 show_downloads: false
 permalink: pretty
 markdown: kramdown
+exclude:
+  - tools
+  - tmp
+  - .jekyll-cache
+  - _site
