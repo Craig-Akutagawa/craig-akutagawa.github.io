@@ -47,7 +47,7 @@
     padding: 0 1.25rem 4rem;
   }
 
-  .main-content > :first-child {
+  .main-content> :first-child {
     margin-top: 0;
   }
 
@@ -171,6 +171,14 @@
     margin-bottom: 1.25rem;
   }
 
+  .page-shell> :first-child {
+    margin-top: 0;
+  }
+
+  .page-shell> :last-child {
+    margin-bottom: 0;
+  }
+
   .section-heading {
     display: flex;
     justify-content: space-between;
@@ -231,6 +239,21 @@
     margin-bottom: 1.75rem;
   }
 
+  .post-meta-bar {
+    display: flex;
+    gap: 0.9rem;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.95rem;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .post-meta-bar .page-kicker,
+  .post-meta-bar .post-date {
+    margin: 0;
+  }
+
   .page-heading .post-date {
     margin-top: 0.35rem;
   }
@@ -285,6 +308,10 @@
     .archive-list li,
     .two-column {
       display: block;
+    }
+
+    .post-meta-bar {
+      gap: 0.45rem;
     }
 
     .section-heading .text-link {
