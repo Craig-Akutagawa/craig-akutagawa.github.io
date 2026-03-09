@@ -5,6 +5,6 @@ layout: default
 {% include custom-style.html %}
 {% include site-nav.html %}
 
-<article class="page-shell">
+<article class="page-shell{% if page.page_class %} {{ page.page_class }}{% endif %}">
     {{ content }}
 </article>

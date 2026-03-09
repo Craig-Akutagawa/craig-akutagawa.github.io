@@ -4,14 +4,18 @@ title: Archive
 permalink: /archive/
 description: A running list of posts published on the site.
 kicker: Archive
+page_class: archive-page
 ---
 
 {% if site.posts.size > 0 %}
-<ul class="archive-list">
+<ul class="archive-list archive-timeline">
   {% for post in site.posts %}
-  <li>
+  <li class="archive-item">
     <span class="archive-date">{{ post.date | date: "%b %-d, %Y" }}</span>
-    <a href="{{ post.url | relative_url }}">{{ post.title }}</a>
+    <div class="archive-entry">
+      <a href="{{ post.url | relative_url }}">{{ post.title }}</a>
+      <p>{{ post.excerpt | strip_html | truncate: 170 }}</p>
+    </div>
   </li>
   {% endfor %}
 </ul>
