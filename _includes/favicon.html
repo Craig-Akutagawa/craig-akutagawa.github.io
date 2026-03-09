@@ -1,7 +1,7 @@
 <script>
   (function () {
-    var avatarUrl = {{ site.avatar_url | jsonify }};
-    if (!avatarUrl) return;
+    var faviconUrl = {{ '/assets/avatar-favicon.png' | relative_url | jsonify }};
+    if (!faviconUrl) return;
 
     function upsertIcon(rel, url) {
       var link = document.head.querySelector('link[rel="' + rel + '"]');
@@ -11,10 +11,11 @@
         document.head.appendChild(link);
       }
       link.href = url;
+      link.type = 'image/png';
     }
 
-    upsertIcon('icon', avatarUrl);
-    upsertIcon('shortcut icon', avatarUrl);
-    upsertIcon('apple-touch-icon', avatarUrl);
+    upsertIcon('icon', faviconUrl);
+    upsertIcon('shortcut icon', faviconUrl);
+    upsertIcon('apple-touch-icon', faviconUrl);
   })();
 </script>
