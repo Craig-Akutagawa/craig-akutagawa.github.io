@@ -1,5 +1,9 @@
 {% assign current_lang = page.lang | default: site.lang | default: 'en-US' %}
 {% assign description_lang = site.description_lang | default: current_lang %}
+{% assign is_home_page = false %}
+{% if page.url == '/' or page.layout == 'home' %}
+  {% assign is_home_page = true %}
+{% endif %}
 <!DOCTYPE html>
 <html lang="{{ current_lang }}">
   <head>
@@ -14,8 +18,8 @@
     {% include favicon.html %}
     {% include custom-style.html %}
   </head>
-  <body class="page-lang-{{ current_lang | slugify }}" data-page-lang="{{ current_lang }}">
-    <header class="page-header" role="banner">
+  <body class="page-lang-{{ current_lang | slugify }}{% if is_home_page %} page-home{% else %} page-interior{% endif %}" data-page-lang="{{ current_lang }}">
+    <header class="page-header{% if is_home_page %} page-header-home{% else %} page-header-compact{% endif %}" role="banner">
       <h1 class="project-name">{{ site.title | default: site.github.repository_name }}</h1>
       <h2 class="project-tagline" lang="{{ description_lang }}">{{ site.description | default: site.github.project_tagline }}</h2>
     </header>

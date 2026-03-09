@@ -6,14 +6,13 @@ layout: default
 
 {% assign current_lang = page.lang | default: site.lang | default: 'en-US' %}
 
-{% if page.title or page.description or page.kicker %}
-<section class="page-intro page-intro-page" lang="{{ current_lang }}">
-    {% if page.kicker %}<p class="page-intro-kicker">{{ page.kicker }}</p>{% endif %}
-    {% if page.title %}<h1 class="page-intro-title">{{ page.title }}</h1>{% endif %}
-    {% if page.description %}<p class="page-intro-copy">{{ page.description }}</p>{% endif %}
-</section>
-{% endif %}
-
 <article class="page-shell{% if page.page_class %} {{ page.page_class }}{% endif %}" lang="{{ current_lang }}">
+    {% if page.title or page.description or page.kicker %}
+    <header class="page-heading">
+        {% if page.kicker %}<p class="page-kicker">{{ page.kicker }}</p>{% endif %}
+        {% if page.title %}<h1>{{ page.title }}</h1>{% endif %}
+        {% if page.description %}<p class="page-lead">{{ page.description }}</p>{% endif %}
+    </header>
+    {% endif %}
     {{ content }}
 </article>

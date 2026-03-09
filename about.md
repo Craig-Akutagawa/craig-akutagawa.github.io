@@ -14,7 +14,7 @@ lang: en-US
       <div class="about-profile-copy">
         <p class="about-eyebrow">Profile</p>
         <p class="about-name">Craig Akutagawa</p>
-        <p class="about-role">Builder, programmer, and keeper of useful notes.</p>
+        <p class="about-role" lang="ja">ものをつくり、コードを書き、日々の発見を静かに綴っています。</p>
       </div>
 
       <div class="about-avatar-shell">
@@ -22,10 +22,8 @@ lang: en-US
       </div>
     </div>
 
-    <p class="about-summary">
-      This site is a personal home base for the things I am building, learning, and revisiting. It gives project
-      notes, debugging lessons, and longer reflections one calm place to live without the overhead of a heavy
-      publishing setup.
+    <p class="about-summary" lang="ja">
+      この場所は、つくっているものや学んだこと、ふと立ち止まって考えたことを置いておくための小さな拠点です。制作の記録やデバッグの覚え書き、あとで読み返したくなる思考の断片を、落ち着いたかたちで残していきます。
     </p>
 
     <div class="about-pill-row">
