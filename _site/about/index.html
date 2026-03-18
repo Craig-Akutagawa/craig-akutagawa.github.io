@@ -370,6 +370,31 @@
     border-top: 1px solid rgba(24, 50, 51, 0.08);
   }
 
+  .post-local-edit {
+    display: grid;
+    gap: 0.55rem;
+    margin: 0 0 1.35rem;
+    padding: 1rem 1.05rem;
+    border: 1px solid rgba(24, 50, 51, 0.1);
+    border-radius: 18px;
+    background: linear-gradient(180deg, rgba(228, 240, 235, 0.54), rgba(255, 255, 255, 0.94));
+  }
+
+  .post-local-edit[hidden] {
+    display: none;
+  }
+
+  .post-local-edit-link {
+    width: fit-content;
+  }
+
+  .post-local-edit p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+
   .post-comments-frame {
     border: 1px solid var(--line);
     border-radius: 20px;

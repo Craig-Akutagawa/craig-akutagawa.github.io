@@ -1,15 +1,21 @@
 const STORAGE_DB = "post-composer-db";
 const STORAGE_STORE = "handles";
 const STORAGE_KEY = "repo-root";
-const DRAFT_STORAGE_KEY = "post-composer-draft-v1";
+const DRAFT_STORAGE_KEY = "post-composer-draft-v2";
 
 const titleInput = document.querySelector("#title");
 const langInput = document.querySelector("#lang");
 const publishInput = document.querySelector("#publishAt");
 const slugInput = document.querySelector("#slug");
+const slugHelp = document.querySelector("#slug-help");
 const excerptInput = document.querySelector("#excerpt");
 const tagsInput = document.querySelector("#tags-input");
 const addTagButton = document.querySelector("#add-tag");
+const postSearchInput = document.querySelector("#post-search");
+const postListEl = document.querySelector("#post-list");
+const newPostButton = document.querySelector("#new-post");
+const composerModeChip = document.querySelector("#composer-mode-chip");
+const editingFileEl = document.querySelector("#editing-file");
 const bodyInput = document.querySelector("#body");
 const statusEl = document.querySelector("#status");
 const fileNameEl = document.querySelector("#file-name");
@@ -29,17 +35,27 @@ const forgetProjectButton = document.querySelector("#forget-project");
 const saveButton = document.querySelector("#save-post");
 const saveAndNewButton = document.querySelector("#save-and-new");
 const downloadButton = document.querySelector("#download-post");
-const insertImageButton = document.querySelector("#insert-image");
+const insertLocalImageButton = document.querySelector("#insert-local-image");
+const insertRemoteImageButton = document.querySelector("#insert-remote-image");
 const toolbarButtons = document.querySelectorAll("[data-action]");
+
+const requestedEditFile = normalizePostFileName(new URLSearchParams(window.location.search).get("edit"));
 
 const state = {
   repoHandle: null,
   slugTouched: false,
   selectedTags: [],
   availableTags: [],
+  postsIndex: [],
   supportsFsAccess: typeof window.showDirectoryPicker === "function",
   dbReady: null,
-  uiReady: false
+  uiReady: false,
+  mode: "create",
+  currentFileName: "",
+  originalFileName: "",
+  originalAssetSlug: "",
+  dirtyBaseline: "",
+  pendingEditFile: requestedEditFile
 };
 
 function pad(value) {
@@ -79,6 +95,18 @@ function formatPreviewDate(dateTimeValue, lang) {
     month: "long",
     day: "numeric"
   }).format(value);
+}
+
+function formatListDate(post) {
+  if (post.publishAt) {
+    return formatPreviewDate(post.publishAt, post.lang || "en-US");
+  }
+
+  return new Intl.DateTimeFormat("zh-CN", {
+    year: "numeric",
+    month: "short",
+    day: "numeric"
+  }).format(new Date(post.lastModified));
 }
 
 function slugFromTitle(title) {
@@ -160,6 +188,127 @@ function parseTagTokens(raw) {
     .filter(Boolean);
 }
 
+function normalizePostFileName(value) {
+  if (!value) {
+    return "";
+  }
+
+  const candidate = String(value).trim().split(/[\\/]/).pop();
+  return /^[A-Za-z0-9._-]+\.md$/.test(candidate) ? candidate : "";
+}
+
+function assetSlugFromFileName(fileName) {
+  const normalized = normalizePostFileName(fileName);
+  const match = normalized.match(/^\d{4}-\d{2}-\d{2}-(.+)\.md$/);
+  return safeSlug(match ? match[1] : normalized.replace(/\.md$/, ""));
+}
+
+function parseYamlScalar(value) {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return "";
+  }
+
+  if (trimmed.startsWith("\"") && trimmed.endsWith("\"")) {
+    return trimmed.slice(1, -1).replace(/\\"/g, "\"").replace(/\\\\/g, "\\");
+  }
+
+  if (trimmed.startsWith("'") && trimmed.endsWith("'")) {
+    return trimmed.slice(1, -1).replace(/''/g, "'");
+  }
+
+  return trimmed;
+}
+
+function splitFrontMatter(source) {
+  const normalized = source.replace(/\r\n/g, "\n");
+  if (!normalized.startsWith("---\n")) {
+    return { frontMatter: "", body: normalized };
+  }
+
+  const endIndex = normalized.indexOf("\n---\n", 4);
+  if (endIndex === -1) {
+    return { frontMatter: "", body: normalized };
+  }
+
+  const frontMatter = normalized.slice(4, endIndex);
+  let body = normalized.slice(endIndex + 5);
+  if (body.startsWith("\n")) {
+    body = body.slice(1);
+  }
+
+  return { frontMatter, body };
+}
+
+function inputValueFromFrontMatterDate(value) {
+  const match = String(value || "").match(/^(\d{4}-\d{2}-\d{2})[ T](\d{2}:\d{2})/);
+  return match ? match[1] + "T" + match[2] : "";
+}
+
+function parseFrontMatterBlock(frontMatter) {
+  const fields = {};
+  const lines = frontMatter.split("\n");
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index];
+    const match = line.match(/^([A-Za-z0-9_-]+):\s*(.*)$/);
+    if (!match) {
+      continue;
+    }
+
+    const key = match[1];
+    const rawValue = match[2];
+
+    if (key === "tags") {
+      const tags = [];
+      const inline = rawValue.trim();
+
+      if (inline.startsWith("[") && inline.endsWith("]")) {
+        inline
+          .slice(1, -1)
+          .split(",")
+          .map((item) => normalizeTag(parseYamlScalar(item)))
+          .filter(Boolean)
+          .forEach((tag) => tags.push(tag));
+      } else {
+        for (let child = index + 1; child < lines.length; child += 1) {
+          const tagLine = lines[child];
+          if (!/^\s*-\s+/.test(tagLine)) {
+            break;
+          }
+          const value = normalizeTag(parseYamlScalar(tagLine.replace(/^\s*-\s+/, "")));
+          if (value) {
+            tags.push(value);
+          }
+        }
+      }
+
+      fields.tags = tags;
+      continue;
+    }
+
+    fields[key] = parseYamlScalar(rawValue);
+  }
+
+  return fields;
+}
+
+function parsePostDocument(fileName, source, lastModified) {
+  const parts = splitFrontMatter(source);
+  const fields = parseFrontMatterBlock(parts.frontMatter);
+  return {
+    fileName,
+    title: fields.title || fileName.replace(/\.md$/, ""),
+    excerpt: fields.excerpt || "",
+    lang: fields.lang || "en-US",
+    publishAt: inputValueFromFrontMatterDate(fields.date) || "",
+    tags: Array.isArray(fields.tags) ? fields.tags : [],
+    body: parts.body,
+    lastModified,
+    assetSlug: assetSlugFromFileName(fileName)
+  };
+}
+
 function hasTag(tag) {
   return state.selectedTags.some((item) => item.toLowerCase() === tag.toLowerCase());
 }
@@ -172,12 +321,14 @@ function addTag(tag) {
 
   state.selectedTags.push(normalized);
   renderTags();
+  renderPreview();
   return true;
 }
 
 function removeTag(tag) {
   state.selectedTags = state.selectedTags.filter((item) => item.toLowerCase() !== tag.toLowerCase());
   renderTags();
+  renderPreview();
 }
 
 function collectPendingTags() {
@@ -189,6 +340,7 @@ function collectPendingTags() {
   pending.forEach(addTag);
   tagsInput.value = "";
   renderTags();
+  renderPreview();
 }
 
 function renderSelectedTags() {
@@ -207,9 +359,9 @@ function renderSelectedTags() {
 
 function renderAvailableTags() {
   const filter = normalizeTag(tagsInput.value).toLowerCase();
-  const available = state.availableTags.filter((tag) => !hasTag(tag)).filter((tag) => (
-    !filter || tag.toLowerCase().includes(filter)
-  ));
+  const available = state.availableTags
+    .filter((tag) => !hasTag(tag))
+    .filter((tag) => !filter || tag.toLowerCase().includes(filter));
 
   if (!available.length) {
     availableTagsEl.innerHTML = "<span class=\"tag-empty\">没有可复用的标签</span>";
@@ -244,10 +396,18 @@ function renderTags() {
 }
 
 function getCurrentSlug() {
+  if (state.mode === "edit" && state.originalAssetSlug) {
+    return state.originalAssetSlug;
+  }
+
   return safeSlug(slugInput.value.trim()) || slugFromTitle(titleInput.value.trim());
 }
 
 function buildFileName() {
+  if (state.mode === "edit" && state.originalFileName) {
+    return state.originalFileName;
+  }
+
   const sourceDate = publishInput.value ? new Date(publishInput.value) : new Date();
   const datePart = [
     sourceDate.getFullYear(),
@@ -304,7 +464,7 @@ function updateEditorStats() {
 }
 
 function syncSlugFromTitle() {
-  if (!state.slugTouched) {
+  if (state.mode === "create" && !state.slugTouched) {
     slugInput.value = getCurrentSlug();
   }
 }
@@ -384,32 +544,7 @@ function handleToolbarAction(action) {
   }
 }
 
-function renderPreview() {
-  const title = titleInput.value.trim();
-  const body = bodyInput.value.trim();
-  syncSlugFromTitle();
-  updateEditorStats();
-
-  if (!title && !body) {
-    fileNameEl.textContent = "未生成文件名";
-    outputMetaEl.textContent = "语言与发布时间会显示在这里";
-    previewDate.textContent = "POST";
-    previewTitle.textContent = "在左边输入标题和正文";
-    previewHost.innerHTML = "<p class=\"preview-empty\">这里会渲染接近博客文章页的预览，包括标题、段落、列表、代码块和图片。</p>";
-    renderPreviewTags();
-    return;
-  }
-
-  fileNameEl.textContent = buildFileName();
-  outputMetaEl.textContent = "语言：" + langInput.value + " | 标签：" + (state.selectedTags.length || 0) + " | 摘要：" + (buildExcerpt() || "自动留空");
-  previewDate.textContent = formatPreviewDate(publishInput.value, langInput.value);
-  previewTitle.textContent = title || "Untitled Post";
-  previewHost.innerHTML = body ? renderMarkdown(body) : "<p class=\"preview-empty\">正文为空。</p>";
-  renderPreviewTags();
-  persistDraft();
-}
-
-function snapshotDraft() {
+function captureEditorSnapshot() {
   return {
     title: titleInput.value,
     lang: langInput.value,
@@ -417,26 +552,142 @@ function snapshotDraft() {
     slug: slugInput.value,
     excerpt: excerptInput.value,
     body: bodyInput.value,
-    tags: state.selectedTags.slice()
+    tags: state.selectedTags.slice(),
+    pendingTagInput: tagsInput.value
   };
 }
 
-function hasDraftContent(draft) {
-  return Boolean(
-    draft.title.trim() ||
-    draft.slug.trim() ||
-    draft.excerpt.trim() ||
-    draft.body.trim() ||
-    draft.tags.length
-  );
+function setDirtyBaseline(snapshot) {
+  state.dirtyBaseline = JSON.stringify(snapshot || captureEditorSnapshot());
 }
 
-function clearDraft() {
+function isDirty() {
+  return JSON.stringify(captureEditorSnapshot()) !== state.dirtyBaseline;
+}
+
+function emptySnapshot() {
+  return {
+    title: "",
+    lang: "zh-Hans",
+    publishAt: defaultDateTimeLocal(),
+    slug: "",
+    excerpt: "",
+    body: "",
+    tags: [],
+    pendingTagInput: ""
+  };
+}
+
+function snapshotFromPost(post) {
+  return {
+    title: post.title || "",
+    lang: post.lang || "en-US",
+    publishAt: post.publishAt || defaultDateTimeLocal(),
+    slug: post.assetSlug || "",
+    excerpt: post.excerpt || "",
+    body: post.body || "",
+    tags: Array.isArray(post.tags) ? post.tags.slice() : [],
+    pendingTagInput: ""
+  };
+}
+
+function applySnapshot(snapshot) {
+  titleInput.value = snapshot.title || "";
+  langInput.value = snapshot.lang || "zh-Hans";
+  publishInput.value = snapshot.publishAt || defaultDateTimeLocal();
+  slugInput.value = safeSlug(snapshot.slug || "");
+  excerptInput.value = snapshot.excerpt || "";
+  bodyInput.value = snapshot.body || "";
+  tagsInput.value = snapshot.pendingTagInput || "";
+  state.selectedTags = Array.isArray(snapshot.tags)
+    ? snapshot.tags
+      .map((tag) => normalizeTag(String(tag)))
+      .filter(Boolean)
+      .filter((tag, index, list) => list.findIndex((item) => item.toLowerCase() === tag.toLowerCase()) === index)
+    : [];
+  state.slugTouched = slugInput.value.trim().length > 0;
+}
+
+function readDraftStore() {
+  if (!("localStorage" in window)) {
+    return {};
+  }
+
+  try {
+    const raw = window.localStorage.getItem(DRAFT_STORAGE_KEY);
+    if (!raw) {
+      return {};
+    }
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch (error) {
+    window.localStorage.removeItem(DRAFT_STORAGE_KEY);
+    return {};
+  }
+}
+
+function writeDraftStore(store) {
   if (!("localStorage" in window)) {
     return;
   }
 
-  window.localStorage.removeItem(DRAFT_STORAGE_KEY);
+  window.localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(store));
+}
+
+function draftKeyFor(fileName) {
+  return fileName ? "edit:" + fileName : "create";
+}
+
+function currentDraftKey() {
+  return state.mode === "edit" && state.originalFileName ? draftKeyFor(state.originalFileName) : "create";
+}
+
+function hasSnapshotContent(snapshot) {
+  return Boolean(
+    snapshot.title.trim() ||
+    snapshot.slug.trim() ||
+    snapshot.excerpt.trim() ||
+    snapshot.body.trim() ||
+    snapshot.tags.length ||
+    snapshot.pendingTagInput.trim()
+  );
+}
+
+function loadDraftByKey(key) {
+  const store = readDraftStore();
+  if (!store[key]) {
+    return null;
+  }
+
+  try {
+    const snapshot = JSON.parse(JSON.stringify(store[key]));
+    return {
+      title: typeof snapshot.title === "string" ? snapshot.title : "",
+      lang: typeof snapshot.lang === "string" ? snapshot.lang : "zh-Hans",
+      publishAt: typeof snapshot.publishAt === "string" && snapshot.publishAt ? snapshot.publishAt : defaultDateTimeLocal(),
+      slug: typeof snapshot.slug === "string" ? snapshot.slug : "",
+      excerpt: typeof snapshot.excerpt === "string" ? snapshot.excerpt : "",
+      body: typeof snapshot.body === "string" ? snapshot.body : "",
+      tags: Array.isArray(snapshot.tags) ? snapshot.tags : [],
+      pendingTagInput: typeof snapshot.pendingTagInput === "string" ? snapshot.pendingTagInput : ""
+    };
+  } catch (error) {
+    return null;
+  }
+}
+
+function clearDraftByKey(key) {
+  const store = readDraftStore();
+  if (!(key in store)) {
+    return;
+  }
+
+  delete store[key];
+  writeDraftStore(store);
+}
+
+function clearCurrentDraft() {
+  clearDraftByKey(currentDraftKey());
 }
 
 function persistDraft() {
@@ -444,44 +695,203 @@ function persistDraft() {
     return;
   }
 
-  const draft = snapshotDraft();
-  if (!hasDraftContent(draft)) {
-    clearDraft();
+  const snapshot = captureEditorSnapshot();
+  const store = readDraftStore();
+  const key = currentDraftKey();
+
+  if (!hasSnapshotContent(snapshot)) {
+    if (key in store) {
+      delete store[key];
+      writeDraftStore(store);
+    }
     return;
   }
 
-  window.localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(draft));
+  store[key] = snapshot;
+  writeDraftStore(store);
 }
 
-function restoreDraft() {
-  if (!("localStorage" in window)) {
+function setComposerUrl(fileName) {
+  const url = new URL(window.location.href);
+  if (fileName) {
+    url.searchParams.set("edit", fileName);
+  } else {
+    url.searchParams.delete("edit");
+  }
+  window.history.replaceState({}, "", url.toString());
+}
+
+function renderComposerMode() {
+  const editing = state.mode === "edit";
+  composerModeChip.textContent = editing ? "编辑模式" : "新建模式";
+  newPostButton.hidden = !editing;
+  editingFileEl.hidden = !editing;
+  if (editing) {
+    editingFileEl.textContent = "当前文件：" + state.originalFileName;
+  }
+
+  slugInput.disabled = editing;
+  slugHelp.textContent = editing
+    ? "编辑模式会保留原文件名与图片目录；slug 仅作为当前文件标识显示。"
+    : "建议使用英文、数字和连字符。留空时会自动生成安全 slug。";
+  saveButton.textContent = editing ? "保存修改" : "保存文章";
+  saveAndNewButton.textContent = editing ? "保存并新建文章" : "保存并继续写下一篇";
+}
+
+function renderPostList() {
+  if (!state.repoHandle) {
+    postListEl.innerHTML = "<div class=\"post-library-empty\">连接项目目录后，这里会显示最近修改的贴文。</div>";
+    return;
+  }
+
+  if (!state.postsIndex.length) {
+    postListEl.innerHTML = "<div class=\"post-library-empty\">当前项目里还没有可编辑的贴文。</div>";
+    return;
+  }
+
+  const keyword = postSearchInput.value.trim().toLowerCase();
+  const filtered = state.postsIndex.filter((post) => {
+    if (!keyword) {
+      return true;
+    }
+
+    const haystack = [
+      post.title,
+      post.fileName,
+      post.excerpt,
+      post.tags.join(" ")
+    ].join(" ").toLowerCase();
+    return haystack.includes(keyword);
+  });
+
+  if (!filtered.length) {
+    postListEl.innerHTML = "<div class=\"post-library-empty\">没有匹配的贴文。试试标题、文件名或标签。</div>";
+    return;
+  }
+
+  postListEl.innerHTML = filtered.map((post) => (
+    "<button class=\"post-library-item" + (state.mode === "edit" && state.originalFileName === post.fileName ? " active" : "") + "\" type=\"button\" data-open-post=\"" + escapeHtml(post.fileName) + "\">" +
+      "<span class=\"post-library-item-title\">" + escapeHtml(post.title) + "</span>" +
+      "<span class=\"post-library-item-meta\">" + escapeHtml(formatListDate(post)) + " | " + escapeHtml(post.fileName) + "</span>" +
+      (post.tags.length
+        ? "<span class=\"post-library-item-tags\">" + post.tags.map((tag) => (
+          "<span class=\"tag-pill suggestion\">" + escapeHtml(tag) + "</span>"
+        )).join("") + "</span>"
+        : "") +
+    "</button>"
+  )).join("");
+}
+
+function renderPreview() {
+  const title = titleInput.value.trim();
+  const body = bodyInput.value.trim();
+  syncSlugFromTitle();
+  updateEditorStats();
+
+  if (!title && !body) {
+    fileNameEl.textContent = state.mode === "edit" && state.originalFileName ? state.originalFileName : "未生成文件名";
+    outputMetaEl.textContent = "语言与发布时间会显示在这里";
+    previewDate.textContent = "POST";
+    previewTitle.textContent = "在左边输入标题和正文";
+    previewHost.innerHTML = "<p class=\"preview-empty\">这里会渲染接近博客文章页的预览，包括标题、段落、列表、代码块和图片。</p>";
+    renderPreviewTags();
+    persistDraft();
+    return;
+  }
+
+  fileNameEl.textContent = buildFileName();
+  outputMetaEl.textContent = (state.mode === "edit" ? "模式：编辑 | " : "模式：新建 | ") + "语言：" + langInput.value + " | 标签：" + state.selectedTags.length + " | 摘要：" + (buildExcerpt() || "自动留空");
+  previewDate.textContent = formatPreviewDate(publishInput.value, langInput.value);
+  previewTitle.textContent = title || "Untitled Post";
+  previewHost.innerHTML = body ? renderMarkdown(body) : "<p class=\"preview-empty\">正文为空。</p>";
+  renderPreviewTags();
+  persistDraft();
+}
+
+function confirmDiscardChanges(message) {
+  if (!isDirty()) {
+    return true;
+  }
+
+  return window.confirm(message);
+}
+
+function enterCreateMode(options = {}) {
+  const snapshot = options.snapshot || emptySnapshot();
+  state.mode = "create";
+  state.currentFileName = "";
+  state.originalFileName = "";
+  state.originalAssetSlug = "";
+  applySnapshot(snapshot);
+  renderComposerMode();
+  renderTags();
+  renderPostList();
+  renderPreview();
+  setComposerUrl("");
+  setDirtyBaseline(options.baseline || emptySnapshot());
+  if (options.focus !== false) {
+    bodyInput.focus();
+  }
+}
+
+async function openPostForEditing(fileName, options = {}) {
+  const normalizedFileName = normalizePostFileName(fileName);
+  if (!normalizedFileName) {
+    setStatus("目标贴文文件名无效。", "error");
     return false;
   }
 
-  const raw = window.localStorage.getItem(DRAFT_STORAGE_KEY);
-  if (!raw) {
+  if (!options.skipDirtyCheck && !confirmDiscardChanges("当前编辑区有未保存修改，确定切换到另一篇贴文吗？")) {
+    return false;
+  }
+
+  if (!state.repoHandle || !await repoHasPostsDirectory(state.repoHandle)) {
+    state.pendingEditFile = normalizedFileName;
+    setStatus("连接项目目录后会自动打开 " + normalizedFileName + "。", "warn");
     return false;
   }
 
   try {
-    const draft = JSON.parse(raw);
-    titleInput.value = typeof draft.title === "string" ? draft.title : "";
-    langInput.value = typeof draft.lang === "string" ? draft.lang : langInput.value;
-    publishInput.value = typeof draft.publishAt === "string" && draft.publishAt ? draft.publishAt : defaultDateTimeLocal();
-    slugInput.value = typeof draft.slug === "string" ? safeSlug(draft.slug) : "";
-    excerptInput.value = typeof draft.excerpt === "string" ? draft.excerpt : "";
-    bodyInput.value = typeof draft.body === "string" ? draft.body : "";
-    state.selectedTags = Array.isArray(draft.tags)
-      ? draft.tags.map((tag) => normalizeTag(String(tag))).filter(Boolean).filter((tag, index, list) => (
-        list.findIndex((item) => item.toLowerCase() === tag.toLowerCase()) === index
-      ))
-      : [];
-    state.slugTouched = slugInput.value.trim().length > 0;
-    return hasDraftContent(snapshotDraft());
+    const postsDir = await getPostsDirectory();
+    const fileHandle = await postsDir.getFileHandle(normalizedFileName);
+    const file = await fileHandle.getFile();
+    const parsed = parsePostDocument(normalizedFileName, await file.text(), file.lastModified);
+    const baseSnapshot = snapshotFromPost(parsed);
+    const draftSnapshot = loadDraftByKey(draftKeyFor(normalizedFileName));
+
+    state.mode = "edit";
+    state.currentFileName = normalizedFileName;
+    state.originalFileName = normalizedFileName;
+    state.originalAssetSlug = parsed.assetSlug;
+    applySnapshot(draftSnapshot || baseSnapshot);
+    slugInput.value = parsed.assetSlug;
+    tagsInput.value = draftSnapshot ? draftSnapshot.pendingTagInput : "";
+    renderComposerMode();
+    renderTags();
+    renderPostList();
+    renderPreview();
+    setComposerUrl(normalizedFileName);
+    setDirtyBaseline(baseSnapshot);
+    bodyInput.focus();
+    setStatus(draftSnapshot
+      ? "已打开 " + normalizedFileName + "，并恢复了这篇贴文的未保存草稿。"
+      : "已载入 " + normalizedFileName + "，后续保存会覆盖原文件。", "success");
+    return true;
   } catch (error) {
-    clearDraft();
+    state.pendingEditFile = "";
+    setStatus("打开贴文失败：" + normalizedFileName + " 不存在，或当前目录不是正确的项目根目录。", "error");
     return false;
   }
+}
+
+async function maybeOpenPendingEditFile() {
+  if (!state.pendingEditFile) {
+    return;
+  }
+
+  const target = state.pendingEditFile;
+  state.pendingEditFile = "";
+  await openPostForEditing(target, { skipDirtyCheck: true });
 }
 
 function ensureFsSupport() {
@@ -571,52 +981,18 @@ async function readTextFile(fileHandle) {
   return file.text();
 }
 
-function parseTagsFromFrontMatter(source) {
-  const match = source.match(/^---\n([\s\S]*?)\n---/);
-  if (!match) {
-    return [];
-  }
-
-  const lines = match[1].split("\n");
-  const tags = [];
-
-  for (let index = 0; index < lines.length; index += 1) {
-    const line = lines[index];
-    if (!/^tags:\s*/.test(line)) {
-      continue;
-    }
-
-    const inline = line.replace(/^tags:\s*/, "").trim();
-    if (inline.startsWith("[") && inline.endsWith("]")) {
-      inline.slice(1, -1).split(",").map((item) => normalizeTag(item.replace(/^['"]|['"]$/g, ""))).filter(Boolean).forEach((tag) => tags.push(tag));
-      break;
-    }
-
-    for (let child = index + 1; child < lines.length; child += 1) {
-      const tagLine = lines[child];
-      if (!/^\s*-\s+/.test(tagLine)) {
-        break;
-      }
-      const value = normalizeTag(tagLine.replace(/^\s*-\s+/, "").replace(/^['"]|['"]$/g, ""));
-      if (value) {
-        tags.push(value);
-      }
-    }
-    break;
-  }
-
-  return tags;
-}
-
-async function loadAvailableTags() {
+async function loadPostsIndex() {
   if (!state.repoHandle || !await repoHasPostsDirectory(state.repoHandle)) {
+    state.postsIndex = [];
     state.availableTags = [];
+    renderPostList();
     renderTags();
     return;
   }
 
   try {
     const postsDir = await getPostsDirectory();
+    const posts = [];
     const tags = new Map();
 
     for await (const entry of postsDir.values()) {
@@ -624,8 +1000,10 @@ async function loadAvailableTags() {
         continue;
       }
 
-      const content = await readTextFile(entry);
-      parseTagsFromFrontMatter(content).forEach((tag) => {
+      const file = await entry.getFile();
+      const parsed = parsePostDocument(entry.name, await file.text(), file.lastModified);
+      posts.push(parsed);
+      parsed.tags.forEach((tag) => {
         const key = tag.toLowerCase();
         if (!tags.has(key)) {
           tags.set(key, tag);
@@ -633,17 +1011,26 @@ async function loadAvailableTags() {
       });
     }
 
+    posts.sort((left, right) => right.lastModified - left.lastModified || left.fileName.localeCompare(right.fileName, "en"));
+    state.postsIndex = posts;
     state.availableTags = Array.from(tags.values()).sort((left, right) => left.localeCompare(right, "en"));
+    renderPostList();
     renderTags();
   } catch (error) {
-    setStatus("读取已有标签失败：" + error.message, "warn");
+    state.postsIndex = [];
+    state.availableTags = [];
+    renderPostList();
+    renderTags();
+    setStatus("读取贴文列表失败：" + error.message, "warn");
   }
 }
 
 async function updateConnectionUi() {
   if (!state.repoHandle) {
     setConnectionState("offline", "未连接项目目录", "第一次使用时，选择整个项目根目录。之后就能同时保存文章和图片。");
+    state.postsIndex = [];
     state.availableTags = [];
+    renderPostList();
     renderTags();
     return;
   }
@@ -651,10 +1038,13 @@ async function updateConnectionUi() {
   const hasPosts = await repoHasPostsDirectory(state.repoHandle);
   if (hasPosts) {
     setConnectionState("", "项目目录已连接", "已连接到 " + state.repoHandle.name + "，可以写入 _posts 和 assets/posts。");
-    await loadAvailableTags();
+    await loadPostsIndex();
+    await maybeOpenPendingEditFile();
   } else {
     setConnectionState("warn", "目录不完整", "已选中 " + state.repoHandle.name + "，但里面找不到 _posts，保存时会被阻止。");
+    state.postsIndex = [];
     state.availableTags = [];
+    renderPostList();
     renderTags();
   }
 }
@@ -674,7 +1064,11 @@ async function restoreProjectHandle() {
     if (permission === "granted" || permission === "prompt") {
       state.repoHandle = handle;
       await updateConnectionUi();
-      setStatus(permission === "granted" ? "已恢复上次连接的项目目录。" : "已找到上次使用的项目目录；保存时可能会再次询问权限。", permission === "granted" ? "success" : "");
+      if (state.mode !== "edit") {
+        setStatus(permission === "granted"
+          ? "已恢复上次连接的项目目录。"
+          : "已找到上次使用的项目目录；保存时可能会再次询问权限。", permission === "granted" ? "success" : "");
+      }
     }
   } catch (error) {
     setStatus("恢复最近使用目录失败：" + error.message, "warn");
@@ -687,13 +1081,16 @@ async function pickProjectRoot() {
   }
 
   try {
+    const pendingTarget = state.pendingEditFile;
     const handle = await window.showDirectoryPicker({ mode: "readwrite" });
     state.repoHandle = handle;
     await persistRepoHandle(handle);
     await updateConnectionUi();
-    setStatus(await repoHasPostsDirectory(handle)
-      ? "已连接到项目目录：" + handle.name + "。后面保存文章和图片会直接写入仓库。"
-      : "已选中目录：" + handle.name + "，但里面没有 _posts。请重新选择博客项目根目录。", await repoHasPostsDirectory(handle) ? "success" : "warn");
+    if (!(pendingTarget && state.mode === "edit")) {
+      setStatus(await repoHasPostsDirectory(handle)
+        ? "已连接到项目目录：" + handle.name + "。后面保存文章和图片会直接写入仓库。"
+        : "已选中目录：" + handle.name + "，但里面没有 _posts。请重新选择博客项目根目录。", await repoHasPostsDirectory(handle) ? "success" : "warn");
+    }
   } catch (error) {
     if (error && error.name !== "AbortError") {
       setStatus("选择项目目录失败：" + error.message, "warn");
@@ -791,11 +1188,28 @@ function insertImagesMarkdown(entries) {
   insertAtSelection("\n" + lines.join("\n\n") + "\n");
 }
 
-function handleImageInsert() {
+function handleLocalImageInsert() {
   if (!ensureFsSupport()) {
     return;
   }
   imagePicker.click();
+}
+
+function insertRemoteImageTemplate() {
+  const start = bodyInput.selectionStart;
+  const end = bodyInput.selectionEnd;
+  const value = bodyInput.value;
+  const selected = value.slice(start, end).trim();
+  const altText = selected || "网络图片";
+  const urlPlaceholder = "https://example.com/image.png";
+  const snippet = "![" + altText + "](" + urlPlaceholder + ")";
+  const urlStartOffset = snippet.indexOf(urlPlaceholder);
+
+  bodyInput.value = value.slice(0, start) + snippet + value.slice(end);
+  bodyInput.focus();
+  bodyInput.setSelectionRange(start + urlStartOffset, start + urlStartOffset + urlPlaceholder.length);
+  renderPreview();
+  setStatus("已插入网络图片模板，直接粘贴图片链接即可。", "success");
 }
 
 async function importImages(files) {
@@ -813,7 +1227,7 @@ async function importImages(files) {
   }
 
   try {
-    if (!state.slugTouched) {
+    if (state.mode === "create" && !state.slugTouched) {
       slugInput.value = getCurrentSlug();
       state.slugTouched = true;
     }
@@ -851,6 +1265,11 @@ async function saveToPosts(resetAfterSave) {
     return false;
   }
 
+  if (state.mode === "edit" && !isDirty()) {
+    setStatus("当前贴文没有新的改动。", "");
+    return true;
+  }
+
   if (!await ensureRepoPermission()) {
     return false;
   }
@@ -859,7 +1278,7 @@ async function saveToPosts(resetAfterSave) {
     const postsDir = await getPostsDirectory();
     const fileName = buildFileName();
 
-    if (await fileExists(postsDir, fileName) && !window.confirm(fileName + " 已存在，是否覆盖？")) {
+    if (state.mode === "create" && await fileExists(postsDir, fileName) && !window.confirm(fileName + " 已存在，是否覆盖？")) {
       return false;
     }
 
@@ -867,14 +1286,21 @@ async function saveToPosts(resetAfterSave) {
     const writable = await fileHandle.createWritable();
     await writable.write(buildMarkdown());
     await writable.close();
-    await loadAvailableTags();
+    clearCurrentDraft();
+    await loadPostsIndex();
 
     if (resetAfterSave) {
-      resetComposer();
+      enterCreateMode({ snapshot: emptySnapshot(), baseline: emptySnapshot() });
       setStatus("已保存 " + fileName + "，编辑器已准备好下一篇新文章。", "success");
-    } else {
-      setStatus("已保存到 " + fileName + "。刷新博客后就能看到新文章。", "success");
+      return true;
     }
+
+    setDirtyBaseline(captureEditorSnapshot());
+    renderPostList();
+    renderPreview();
+    setStatus(state.mode === "edit"
+      ? "已保存修改到 " + fileName + "。"
+      : "已保存到 " + fileName + "。刷新博客后就能看到新文章。", "success");
     return true;
   } catch (error) {
     setStatus("保存失败：" + error.message, "error");
@@ -904,18 +1330,17 @@ function downloadMarkdown() {
   setStatus("已下载 Markdown 文件。没有目录写权限时，你仍然可以用这个方式保存。", "success");
 }
 
-function resetComposer() {
-  titleInput.value = "";
-  excerptInput.value = "";
-  bodyInput.value = "";
-  slugInput.value = "";
-  tagsInput.value = "";
-  publishInput.value = defaultDateTimeLocal();
-  state.selectedTags = [];
-  state.slugTouched = false;
-  renderTags();
-  renderPreview();
-  bodyInput.focus();
+function switchToNewPost() {
+  if (!confirmDiscardChanges("当前编辑区有未保存修改，确定切换到新建模式吗？")) {
+    return;
+  }
+
+  const createDraft = loadDraftByKey("create");
+  enterCreateMode({
+    snapshot: createDraft || emptySnapshot(),
+    baseline: emptySnapshot()
+  });
+  setStatus(createDraft ? "已切换到新建模式，并恢复了未完成的新文章草稿。" : "已切换到新建模式。", createDraft ? "success" : "");
 }
 
 toolbarButtons.forEach((button) => {
@@ -924,12 +1349,15 @@ toolbarButtons.forEach((button) => {
 
 pickProjectButton.addEventListener("click", pickProjectRoot);
 forgetProjectButton.addEventListener("click", forgetProjectRoot);
+newPostButton.addEventListener("click", switchToNewPost);
 saveButton.addEventListener("click", () => saveToPosts(false));
 saveAndNewButton.addEventListener("click", () => saveToPosts(true));
 downloadButton.addEventListener("click", downloadMarkdown);
-insertImageButton.addEventListener("click", handleImageInsert);
+insertLocalImageButton.addEventListener("click", handleLocalImageInsert);
+insertRemoteImageButton.addEventListener("click", insertRemoteImageTemplate);
 imagePicker.addEventListener("change", (event) => importImages(Array.from(event.target.files || [])));
 addTagButton.addEventListener("click", collectPendingTags);
+postSearchInput.addEventListener("input", renderPostList);
 
 tagsInput.addEventListener("keydown", (event) => {
   if (event.key === "Enter" || event.key === ",") {
@@ -957,27 +1385,28 @@ availableTagsEl.addEventListener("click", (event) => {
   addTag(button.dataset.addTag);
 });
 
+postListEl.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-open-post]");
+  if (!button) {
+    return;
+  }
+  openPostForEditing(button.dataset.openPost);
+});
+
 [titleInput, langInput, publishInput, excerptInput, bodyInput].forEach((element) => {
   element.addEventListener("input", renderPreview);
 });
 
 slugInput.addEventListener("input", () => {
+  if (state.mode === "edit") {
+    slugInput.value = state.originalAssetSlug;
+    return;
+  }
+
   state.slugTouched = slugInput.value.trim().length > 0;
   slugInput.value = safeSlug(slugInput.value);
   renderPreview();
 });
-
-publishInput.value = defaultDateTimeLocal();
-const restoredDraft = restoreDraft();
-state.uiReady = true;
-renderTags();
-renderPreview();
-updateConnectionUi();
-restoreProjectHandle();
-
-if (restoredDraft) {
-  setStatus("已恢复上次未完成的草稿。", "success");
-}
 
 window.addEventListener("keydown", (event) => {
   if (!(event.ctrlKey || event.metaKey) || event.key.toLowerCase() !== "s") {
@@ -987,3 +1416,32 @@ window.addEventListener("keydown", (event) => {
   event.preventDefault();
   saveToPosts(event.shiftKey);
 });
+
+window.addEventListener("beforeunload", (event) => {
+  if (!isDirty()) {
+    return;
+  }
+
+  event.preventDefault();
+  event.returnValue = "";
+});
+
+const createDraft = !requestedEditFile ? loadDraftByKey("create") : null;
+enterCreateMode({
+  snapshot: createDraft || emptySnapshot(),
+  baseline: emptySnapshot(),
+  focus: false
+});
+state.uiReady = true;
+renderPostList();
+renderTags();
+renderPreview();
+
+if (requestedEditFile) {
+  setStatus("连接项目目录后会自动打开 " + requestedEditFile + "。", "warn");
+} else if (createDraft) {
+  setStatus("已恢复上次未完成的新文章草稿。", "success");
+}
+
+updateConnectionUi();
+restoreProjectHandle();

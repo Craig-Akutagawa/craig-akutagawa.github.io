@@ -32,6 +32,27 @@
               </div>
             </section>
 
+            <section class="library-card stack">
+              <div>
+                <h2 class="section-title">编辑已有贴文</h2>
+                <p class="section-copy">支持最近修改列表和搜索，打开后会回填 front matter 与正文。</p>
+              </div>
+
+              <div class="composer-mode-row">
+                <div class="status-chip" id="composer-mode-chip">新建模式</div>
+                <button class="action-button ghost compact" id="new-post" type="button" hidden>切换到新建</button>
+              </div>
+
+              <div class="editing-file" id="editing-file" hidden>当前文件：</div>
+
+              <label>
+                <span class="field-label">搜索贴文</span>
+                <input id="post-search" name="post-search" type="text" placeholder="按标题、文件名或标签搜索">
+              </label>
+
+              <div class="post-library-list" id="post-list" aria-live="polite"></div>
+            </section>
+
             <section class="meta-card stack">
               <div>
                 <h2 class="section-title">文章信息</h2>
@@ -88,7 +109,7 @@
                   <label>
                     <span class="field-label">文件 slug</span>
                     <input id="slug" name="slug" type="text" placeholder="默认自动生成">
-                    <span class="field-help">建议使用英文、数字和连字符。留空时会自动生成安全 slug。</span>
+                    <span class="field-help" id="slug-help">建议使用英文、数字和连字符。留空时会自动生成安全 slug。</span>
                   </label>
                 </div>
               </details>
@@ -102,9 +123,11 @@
               <ul class="helper-list">
                 <li><code>**粗体**</code>、<code>*斜体*</code>、<code>`行内代码`</code></li>
                 <li><code># 一级标题</code>、<code>## 二级标题</code>、引用、列表、任务列表</li>
-                <li>插入图片时会自动复制到 <code>assets/posts/&lt;slug&gt;/</code></li>
+                <li><code>本地导入图片</code> 会把图片复制到 <code>assets/posts/&lt;slug&gt;/</code> 再插入正文</li>
+                <li><code>添加网络图片</code> 会直接插入 Markdown 外链模板，粘贴图片 URL 即可</li>
                 <li>标签支持复用已有值；输入后按 <code>Enter</code>、逗号，或直接失焦都会加入</li>
                 <li>草稿会自动保存在浏览器本地，下次打开会自动恢复</li>
+                <li>编辑模式会覆盖原 Markdown 文件，并保持原文件名与图片目录稳定</li>
                 <li><code>Ctrl + S</code> / <code>Cmd + S</code> 直接保存，<code>Shift</code> + 保存会进入下一篇</li>
                 <li>如果浏览器不支持本地写入，仍然可以下载 Markdown 文件</li>
               </ul>
@@ -140,7 +163,8 @@
               <div class="toolbar-group">
                 <button class="tool-button" data-action="code-block" type="button">代码块</button>
                 <button class="tool-button" data-action="hr" type="button">分隔线</button>
-                <button class="tool-button" id="insert-image" type="button">插入图片</button>
+                <button class="tool-button" id="insert-local-image" type="button">本地导入图片</button>
+                <button class="tool-button" id="insert-remote-image" type="button">添加网络图片</button>
               </div>
             </div>
 

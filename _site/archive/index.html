@@ -370,6 +370,31 @@
     border-top: 1px solid rgba(24, 50, 51, 0.08);
   }
 
+  .post-local-edit {
+    display: grid;
+    gap: 0.55rem;
+    margin: 0 0 1.35rem;
+    padding: 1rem 1.05rem;
+    border: 1px solid rgba(24, 50, 51, 0.1);
+    border-radius: 18px;
+    background: linear-gradient(180deg, rgba(228, 240, 235, 0.54), rgba(255, 255, 255, 0.94));
+  }
+
+  .post-local-edit[hidden] {
+    display: none;
+  }
+
+  .post-local-edit-link {
+    width: fit-content;
+  }
+
+  .post-local-edit p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+
   .post-comments-frame {
     border: 1px solid var(--line);
     border-radius: 20px;
@@ -895,6 +920,23 @@
 <ul class="archive-list archive-timeline">
   
   <li class="archive-item">
+    <span class="archive-date">Mar 19, 2026</span>
+    <div class="archive-entry">
+      <a href="/2026/03/19/post-202603190055/">寿司郎，你做得好啊</a>
+      
+      <div class="tag-row tag-row-compact" aria-label="Post tags">
+        
+        <span class="tag-chip tag-chip-compact">food</span>
+        
+        <span class="tag-chip tag-chip-compact">daily</span>
+        
+      </div>
+      
+      <p>下周一开始返场 10 元焦糖鹅肝，我将每天都排号去吃。 image</p>
+    </div>
+  </li>
+  
+  <li class="archive-item">
     <span class="archive-date">Mar 9, 2026</span>
     <div class="archive-entry">
       <a href="/2026/03/09/hikokumin/">我又成「非国民」了？</a>
@@ -904,8 +946,6 @@
         <span class="tag-chip tag-chip-compact">commentary</span>
         
         <span class="tag-chip tag-chip-compact">anime</span>
-        
-        <span class="tag-chip tag-chip-compact">culture</span>
         
       </div>
       
@@ -919,10 +959,6 @@
       <a href="/2026/03/09/post-history/">为什么上海只有百年历史，却很有文化底蕴的感觉？</a>
       
       <div class="tag-row tag-row-compact" aria-label="Post tags">
-        
-        <span class="tag-chip tag-chip-compact">history</span>
-        
-        <span class="tag-chip tag-chip-compact">city</span>
         
         <span class="tag-chip tag-chip-compact">commentary</span>
         
@@ -940,8 +976,6 @@
       <div class="tag-row tag-row-compact" aria-label="Post tags">
         
         <span class="tag-chip tag-chip-compact">daily</span>
-        
-        <span class="tag-chip tag-chip-compact">food</span>
         
       </div>
       

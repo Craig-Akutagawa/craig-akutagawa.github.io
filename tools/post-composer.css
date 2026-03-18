@@ -128,6 +128,7 @@ h1 {
 }
 
 .meta-card,
+.library-card,
 .helper-card,
 .preview-card,
 .editor-panel {
@@ -135,6 +136,7 @@ h1 {
 }
 
 .meta-card,
+.library-card,
 .helper-card,
 .preview-card {
   background: var(--panel-strong);
@@ -229,6 +231,92 @@ textarea {
   color: var(--muted);
   font-size: 0.92rem;
   line-height: 1.6;
+}
+
+.composer-mode-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.editing-file {
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  background: rgba(27, 100, 93, 0.06);
+  color: var(--accent-deep);
+  font-size: 0.93rem;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.post-library-list {
+  display: grid;
+  gap: 10px;
+  max-height: 360px;
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.post-library-item {
+  appearance: none;
+  width: 100%;
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+  padding: 13px 14px;
+  border: 1px solid rgba(23, 50, 52, 0.12);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.84);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease, transform 0.15s ease, background 0.15s ease;
+}
+
+.post-library-item:hover {
+  transform: translateY(-1px);
+  border-color: rgba(27, 100, 93, 0.28);
+  background: #fffefb;
+}
+
+.post-library-item.active {
+  border-color: rgba(27, 100, 93, 0.36);
+  background: rgba(220, 234, 228, 0.42);
+}
+
+.post-library-item-title {
+  color: var(--accent-deep);
+  font-family: var(--display-font);
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.post-library-item-meta {
+  color: var(--muted);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.post-library-item-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.post-library-item .tag-pill {
+  cursor: default;
+}
+
+.post-library-empty {
+  padding: 14px;
+  border: 1px dashed rgba(23, 50, 52, 0.18);
+  border-radius: 16px;
+  color: var(--muted);
+  line-height: 1.65;
 }
 
 .tag-input-row {
@@ -665,7 +753,12 @@ details[open] summary {
     grid-template-columns: 1fr;
   }
 
+  .composer-mode-row {
+    align-items: stretch;
+  }
+
   .panel-inner,
+  .library-card,
   .meta-card,
   .helper-card,
   .preview-card,

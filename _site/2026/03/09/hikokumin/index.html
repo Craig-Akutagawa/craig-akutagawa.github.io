@@ -371,6 +371,31 @@
     border-top: 1px solid rgba(24, 50, 51, 0.08);
   }
 
+  .post-local-edit {
+    display: grid;
+    gap: 0.55rem;
+    margin: 0 0 1.35rem;
+    padding: 1rem 1.05rem;
+    border: 1px solid rgba(24, 50, 51, 0.1);
+    border-radius: 18px;
+    background: linear-gradient(180deg, rgba(228, 240, 235, 0.54), rgba(255, 255, 255, 0.94));
+  }
+
+  .post-local-edit[hidden] {
+    display: none;
+  }
+
+  .post-local-edit-link {
+    width: fit-content;
+  }
+
+  .post-local-edit p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+
   .post-comments-frame {
     border: 1px solid var(--line);
     border-radius: 20px;
@@ -900,16 +925,19 @@
             
             <span class="tag-chip">anime</span>
             
-            <span class="tag-chip">culture</span>
-            
         </div>
         
         <h1>我又成「非国民」了？</h1>
     </header>
 
+    <div class="post-local-edit" id="post-local-edit" data-post-file="2026-03-09-hikokumin.md" hidden>
+        <a class="button-link button-link-secondary post-local-edit-link" href="http://127.0.0.1:4173/post-composer.html">编辑此文</a>
+        <p>仅在本地预览环境显示，点击后会打开本地发帖器并载入当前 Markdown。</p>
+    </div>
+
     <p>评价就是，国内的二次元群体仍然没有解决自己是不是“文化罕见”这个身份危机问题。</p>
 
-<p>很多人以为二次元群体批日，强调二次元是左翼文艺是作秀表演，为的是得到在公共场合合法存在的资格。但这是错的。二次元群体并不是为了保护自己的爱好而这样做。而是他们自身的对自己背叛了民族叙事（日本是敌人）而感到巨大的罪恶感和恐惧。他首先是困惑自己到底是不是“罕见”，这种身份危机是他必须处理的。</p>
+<p>很多人以为二次元群体批日，强调二次元是左翼文艺是作秀表演，为的是得到在公共场合合法存在的资格。但这是错的。<strong>二次元群体并不是为了保护自己的爱好而这样做。而是他们自身的对自己背叛了民族叙事（日本是敌人）而感到巨大的罪恶感和恐惧。</strong>他首先是困惑自己到底是不是“罕见”，这种身份危机是他必须处理的。</p>
 
 <p>其他日本文化爱好者，比如日本音乐，日本电影，日本游戏。都从来没有过二次元群体这样的身份认同危机。基本都是抱着不要上纲上线心态，但是二次元群体就做不到这一点。</p>
 
@@ -933,7 +961,7 @@
 
 <p>但这种论调有没有漏洞？当然也有。民族主义者就提出来了。帝国主义者的问题在于还是太现代化了，他抛弃了“禁忌”这个概念，只要是好的就要拿。但这等同于无视历史创伤，放弃本土文化的纯洁性，而这种污染仍然是“非国民”的特征。</p>
 
-<p>另外，值得补充的一点是，在战前的日本，「非国民」的称号常被用于指控有“反国体”和反战活动及言论的人、不服从日本帝国政府方针的人、有特定的思想和价值观的人等，换言之，抵制帝国主义、呼吁和平的正常人。</p>
+<p>另外，值得补充的一点是，在战前的日本，「非国民」的称号常被用于指控有“反国体”和反战活动及言论的人、不服从日本帝国政府方针的人、有特定的思想和价值观的人等，换言之，<strong>抵制帝国主义、呼吁和平的正常人</strong>。</p>
 
 <p>这样想，那我确实是非国民。</p>
 
@@ -942,6 +970,29 @@
 
 
 </article>
+
+<script>
+  (function () {
+    var host = window.location.hostname;
+    if (host !== "localhost" && host !== "127.0.0.1") {
+      return;
+    }
+
+    var container = document.getElementById("post-local-edit");
+    if (!container) {
+      return;
+    }
+
+    var fileName = container.getAttribute("data-post-file");
+    var link = container.querySelector(".post-local-edit-link");
+    if (!fileName || !link) {
+      return;
+    }
+
+    link.href = "http://127.0.0.1:4173/post-composer.html?edit=" + encodeURIComponent(fileName);
+    container.hidden = false;
+  })();
+</script>
 
       <footer class="site-footer">
   <div class="site-footer-inner">

@@ -19,7 +19,35 @@ layout: default
         <h1>{{ page.title }}</h1>
     </header>
 
+    <div class="post-local-edit" id="post-local-edit" data-post-file="{{ page.name | escape }}" hidden>
+        <a class="button-link button-link-secondary post-local-edit-link" href="http://127.0.0.1:4173/post-composer.html">编辑此文</a>
+        <p>仅在本地预览环境显示，点击后会打开本地发帖器并载入当前 Markdown。</p>
+    </div>
+
     {{ content }}
 
     {% include comments-giscus.html lang=current_lang %}
 </article>
+
+<script>
+  (function () {
+    var host = window.location.hostname;
+    if (host !== "localhost" && host !== "127.0.0.1") {
+      return;
+    }
+
+    var container = document.getElementById("post-local-edit");
+    if (!container) {
+      return;
+    }
+
+    var fileName = container.getAttribute("data-post-file");
+    var link = container.querySelector(".post-local-edit-link");
+    if (!fileName || !link) {
+      return;
+    }
+
+    link.href = "http://127.0.0.1:4173/post-composer.html?edit=" + encodeURIComponent(fileName);
+    container.hidden = false;
+  })();
+</script>

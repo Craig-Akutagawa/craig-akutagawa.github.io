@@ -371,6 +371,31 @@
     border-top: 1px solid rgba(24, 50, 51, 0.08);
   }
 
+  .post-local-edit {
+    display: grid;
+    gap: 0.55rem;
+    margin: 0 0 1.35rem;
+    padding: 1rem 1.05rem;
+    border: 1px solid rgba(24, 50, 51, 0.1);
+    border-radius: 18px;
+    background: linear-gradient(180deg, rgba(228, 240, 235, 0.54), rgba(255, 255, 255, 0.94));
+  }
+
+  .post-local-edit[hidden] {
+    display: none;
+  }
+
+  .post-local-edit-link {
+    width: fit-content;
+  }
+
+  .post-local-edit p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+
   .post-comments-frame {
     border: 1px solid var(--line);
     border-radius: 20px;
@@ -898,12 +923,15 @@
             
             <span class="tag-chip">daily</span>
             
-            <span class="tag-chip">food</span>
-            
         </div>
         
         <h1>我的猪猪堡呢？？</h1>
     </header>
+
+    <div class="post-local-edit" id="post-local-edit" data-post-file="2026-03-09-where-is-my-pork-burger.md" hidden>
+        <a class="button-link button-link-secondary post-local-edit-link" href="http://127.0.0.1:4173/post-composer.html">编辑此文</a>
+        <p>仅在本地预览环境显示，点击后会打开本地发帖器并载入当前 Markdown。</p>
+    </div>
 
     <p>这傻逼南苏，麦当劳 1+1 里面的猪猪堡居然卖完了，没了猪猪堡我吃什么？</p>
 
@@ -912,6 +940,29 @@
 
 
 </article>
+
+<script>
+  (function () {
+    var host = window.location.hostname;
+    if (host !== "localhost" && host !== "127.0.0.1") {
+      return;
+    }
+
+    var container = document.getElementById("post-local-edit");
+    if (!container) {
+      return;
+    }
+
+    var fileName = container.getAttribute("data-post-file");
+    var link = container.querySelector(".post-local-edit-link");
+    if (!fileName || !link) {
+      return;
+    }
+
+    link.href = "http://127.0.0.1:4173/post-composer.html?edit=" + encodeURIComponent(fileName);
+    container.hidden = false;
+  })();
+</script>
 
       <footer class="site-footer">
   <div class="site-footer-inner">

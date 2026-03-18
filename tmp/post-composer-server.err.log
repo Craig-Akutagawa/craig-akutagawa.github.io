@@ -10,3 +10,28 @@
 127.0.0.1 - - [19/Mar/2026 00:28:56] "GET /post-composer.html HTTP/1.1" 200 -
 127.0.0.1 - - [19/Mar/2026 00:28:56] "GET /post-composer.css HTTP/1.1" 304 -
 127.0.0.1 - - [19/Mar/2026 00:28:56] "GET /post-composer-app.js HTTP/1.1" 304 -
+127.0.0.1 - - [19/Mar/2026 00:53:57] "GET /post-composer.html HTTP/1.1" 200 -
+127.0.0.1 - - [19/Mar/2026 00:53:57] "GET /post-composer.css HTTP/1.1" 200 -
+127.0.0.1 - - [19/Mar/2026 00:53:57] "GET /post-composer-app.js HTTP/1.1" 200 -
+127.0.0.1 - - [19/Mar/2026 00:54:10] "GET /post-composer-app.js HTTP/1.1" 200 -
+127.0.0.1 - - [19/Mar/2026 00:54:10] "GET /post-composer.html HTTP/1.1" 200 -
+127.0.0.1 - - [19/Mar/2026 00:54:43] "GET /post-composer.html HTTP/1.1" 200 -
+127.0.0.1 - - [19/Mar/2026 00:55:45] "GET /post-composer.html?edit=2026-03-09-hikokumin.md HTTP/1.1" 200 -
+127.0.0.1 - - [19/Mar/2026 00:55:45] "GET /post-composer.css HTTP/1.1" 304 -
+127.0.0.1 - - [19/Mar/2026 00:55:45] "GET /post-composer-app.js HTTP/1.1" 200 -
+127.0.0.1 - - [19/Mar/2026 00:59:37] code 404, message File not found
+127.0.0.1 - - [19/Mar/2026 00:59:37] "GET /assets/posts/post-202603190055/image.jpg HTTP/1.1" 404 -
+127.0.0.1 - - [19/Mar/2026 00:59:43] code 404, message File not found
+127.0.0.1 - - [19/Mar/2026 00:59:43] "GET /assets/posts/post-202603190055/image.jpg HTTP/1.1" 404 -
+127.0.0.1 - - [19/Mar/2026 01:04:45] "GET /post-composer.html HTTP/1.1" 200 -
+127.0.0.1 - - [19/Mar/2026 01:06:38] "GET /post-composer.html HTTP/1.1" 200 -
+127.0.0.1 - - [19/Mar/2026 01:06:38] "GET /post-composer.css HTTP/1.1" 304 -
+127.0.0.1 - - [19/Mar/2026 01:06:38] "GET /post-composer-app.js HTTP/1.1" 200 -
+127.0.0.1 - - [19/Mar/2026 01:06:38] code 404, message File not found
+127.0.0.1 - - [19/Mar/2026 01:06:38] "GET /assets/posts/post-202603190055/image.jpg HTTP/1.1" 404 -
+127.0.0.1 - - [19/Mar/2026 01:06:44] code 404, message File not found
+127.0.0.1 - - [19/Mar/2026 01:06:44] "GET /assets/posts/post-202603190055/image.jpg HTTP/1.1" 404 -
+127.0.0.1 - - [19/Mar/2026 01:06:47] code 404, message File not found
+127.0.0.1 - - [19/Mar/2026 01:06:47] "GET /assets/posts/post-202603190055/image.jpg HTTP/1.1" 404 -
+127.0.0.1 - - [19/Mar/2026 01:06:47] code 404, message File not found
+127.0.0.1 - - [19/Mar/2026 01:06:47] "GET /assets/posts/post-202603190055/image.jpg HTTP/1.1" 404 -

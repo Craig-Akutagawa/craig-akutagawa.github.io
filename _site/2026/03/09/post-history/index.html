@@ -371,6 +371,31 @@
     border-top: 1px solid rgba(24, 50, 51, 0.08);
   }
 
+  .post-local-edit {
+    display: grid;
+    gap: 0.55rem;
+    margin: 0 0 1.35rem;
+    padding: 1rem 1.05rem;
+    border: 1px solid rgba(24, 50, 51, 0.1);
+    border-radius: 18px;
+    background: linear-gradient(180deg, rgba(228, 240, 235, 0.54), rgba(255, 255, 255, 0.94));
+  }
+
+  .post-local-edit[hidden] {
+    display: none;
+  }
+
+  .post-local-edit-link {
+    width: fit-content;
+  }
+
+  .post-local-edit p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+
   .post-comments-frame {
     border: 1px solid var(--line);
     border-radius: 20px;
@@ -896,16 +921,17 @@
         
         <div class="tag-row tag-row-post" aria-label="Post tags">
             
-            <span class="tag-chip">history</span>
-            
-            <span class="tag-chip">city</span>
-            
             <span class="tag-chip">commentary</span>
             
         </div>
         
         <h1>为什么上海只有百年历史，却很有文化底蕴的感觉？</h1>
     </header>
+
+    <div class="post-local-edit" id="post-local-edit" data-post-file="2026-03-09-post-history.md" hidden>
+        <a class="button-link button-link-secondary post-local-edit-link" href="http://127.0.0.1:4173/post-composer.html">编辑此文</a>
+        <p>仅在本地预览环境显示，点击后会打开本地发帖器并载入当前 Markdown。</p>
+    </div>
 
     <p>“底蕴”来自于“历史和现实的有机联系”。</p>
 
@@ -946,6 +972,29 @@
 
 
 </article>
+
+<script>
+  (function () {
+    var host = window.location.hostname;
+    if (host !== "localhost" && host !== "127.0.0.1") {
+      return;
+    }
+
+    var container = document.getElementById("post-local-edit");
+    if (!container) {
+      return;
+    }
+
+    var fileName = container.getAttribute("data-post-file");
+    var link = container.querySelector(".post-local-edit-link");
+    if (!fileName || !link) {
+      return;
+    }
+
+    link.href = "http://127.0.0.1:4173/post-composer.html?edit=" + encodeURIComponent(fileName);
+    container.hidden = false;
+  })();
+</script>
 
       <footer class="site-footer">
   <div class="site-footer-inner">
