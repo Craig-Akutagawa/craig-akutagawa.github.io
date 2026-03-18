@@ -34,6 +34,7 @@ const pickProjectButton = document.querySelector("#pick-project");
 const forgetProjectButton = document.querySelector("#forget-project");
 const saveButton = document.querySelector("#save-post");
 const saveAndNewButton = document.querySelector("#save-and-new");
+const publishButton = document.querySelector("#publish-post");
 const downloadButton = document.querySelector("#download-post");
 const insertLocalImageButton = document.querySelector("#insert-local-image");
 const insertRemoteImageButton = document.querySelector("#insert-remote-image");
@@ -54,6 +55,8 @@ const state = {
   currentFileName: "",
   originalFileName: "",
   originalAssetSlug: "",
+  lastSavedContext: null,
+  publishing: false,
   dirtyBaseline: "",
   pendingEditFile: requestedEditFile
 };
@@ -319,6 +322,7 @@ function addTag(tag) {
     return false;
   }
 
+  setPublishAvailability(null);
   state.selectedTags.push(normalized);
   renderTags();
   renderPreview();
@@ -326,6 +330,7 @@ function addTag(tag) {
 }
 
 function removeTag(tag) {
+  setPublishAvailability(null);
   state.selectedTags = state.selectedTags.filter((item) => item.toLowerCase() !== tag.toLowerCase());
   renderTags();
   renderPreview();
@@ -449,6 +454,36 @@ function buildMarkdown() {
 function setStatus(message, kind) {
   statusEl.textContent = message;
   statusEl.className = "status-text" + (kind ? " " + kind : "");
+}
+
+function setPublishAvailability(context) {
+  state.lastSavedContext = context;
+
+  if (!publishButton) {
+    return;
+  }
+
+  if (!context) {
+    publishButton.classList.add("hidden");
+    publishButton.disabled = false;
+    publishButton.textContent = "提交并推送";
+    return;
+  }
+
+  publishButton.classList.remove("hidden");
+  publishButton.disabled = false;
+  publishButton.textContent = "提交并推送";
+}
+
+function setPublishingState(active) {
+  state.publishing = active;
+
+  if (!publishButton) {
+    return;
+  }
+
+  publishButton.disabled = active || !state.lastSavedContext;
+  publishButton.textContent = active ? "正在推送..." : "提交并推送";
 }
 
 function setConnectionState(mode, text, detail) {
@@ -822,6 +857,7 @@ function enterCreateMode(options = {}) {
   state.currentFileName = "";
   state.originalFileName = "";
   state.originalAssetSlug = "";
+  setPublishAvailability(null);
   applySnapshot(snapshot);
   renderComposerMode();
   renderTags();
@@ -863,6 +899,7 @@ async function openPostForEditing(fileName, options = {}) {
     state.currentFileName = normalizedFileName;
     state.originalFileName = normalizedFileName;
     state.originalAssetSlug = parsed.assetSlug;
+    setPublishAvailability(null);
     applySnapshot(draftSnapshot || baseSnapshot);
     slugInput.value = parsed.assetSlug;
     tagsInput.value = draftSnapshot ? draftSnapshot.pendingTagInput : "";
@@ -1100,6 +1137,7 @@ async function pickProjectRoot() {
 
 async function forgetProjectRoot() {
   state.repoHandle = null;
+  setPublishAvailability(null);
   await clearPersistedHandle();
   await updateConnectionUi();
   setStatus("已断开当前目录连接。之后仍然可以下载 Markdown 文件。", "");
@@ -1205,6 +1243,7 @@ function insertRemoteImageTemplate() {
   const snippet = "![" + altText + "](" + urlPlaceholder + ")";
   const urlStartOffset = snippet.indexOf(urlPlaceholder);
 
+  setPublishAvailability(null);
   bodyInput.value = value.slice(0, start) + snippet + value.slice(end);
   bodyInput.focus();
   bodyInput.setSelectionRange(start + urlStartOffset, start + urlStartOffset + urlPlaceholder.length);
@@ -1227,6 +1266,7 @@ async function importImages(files) {
   }
 
   try {
+    setPublishAvailability(null);
     if (state.mode === "create" && !state.slugTouched) {
       slugInput.value = getCurrentSlug();
       state.slugTouched = true;
@@ -1256,6 +1296,11 @@ async function importImages(files) {
 }
 
 async function saveToPosts(resetAfterSave) {
+  const publishContext = {
+    fileName: buildFileName(),
+    assetSlug: getCurrentSlug(),
+    mode: state.mode
+  };
   collectPendingTags();
   const title = titleInput.value.trim();
   const body = bodyInput.value.trim();
@@ -1296,6 +1341,7 @@ async function saveToPosts(resetAfterSave) {
     }
 
     setDirtyBaseline(captureEditorSnapshot());
+    setPublishAvailability(publishContext);
     renderPostList();
     renderPreview();
     setStatus(state.mode === "edit"
@@ -1309,6 +1355,7 @@ async function saveToPosts(resetAfterSave) {
 }
 
 function downloadMarkdown() {
+  setPublishAvailability(null);
   collectPendingTags();
   const title = titleInput.value.trim();
   const body = bodyInput.value.trim();
@@ -1328,6 +1375,46 @@ function downloadMarkdown() {
   anchor.remove();
   URL.revokeObjectURL(url);
   setStatus("已下载 Markdown 文件。没有目录写权限时，你仍然可以用这个方式保存。", "success");
+}
+
+async function publishPost() {
+  if (!state.lastSavedContext || state.publishing) {
+    return;
+  }
+
+  setPublishingState(true);
+  try {
+    const response = await fetch("/publish", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(state.lastSavedContext)
+    });
+
+    let result;
+    try {
+      result = await response.json();
+    } catch (error) {
+      result = { ok: false, message: "发布接口返回了无效响应。" };
+    }
+
+    if (!response.ok || !result.ok) {
+      setStatus("提交并推送失败：" + (result.message || "未知错误"), "error");
+      return;
+    }
+
+    if (result.status === "noop") {
+      setStatus(result.message || "当前贴文没有可提交的 Git 改动。", "");
+      return;
+    }
+
+    setStatus((result.message || "已提交并推送当前贴文。") + (result.commitMessage ? " " + result.commitMessage : ""), "success");
+  } catch (error) {
+    setStatus("提交并推送失败：" + error.message, "error");
+  } finally {
+    setPublishingState(false);
+  }
 }
 
 function switchToNewPost() {
@@ -1352,6 +1439,7 @@ forgetProjectButton.addEventListener("click", forgetProjectRoot);
 newPostButton.addEventListener("click", switchToNewPost);
 saveButton.addEventListener("click", () => saveToPosts(false));
 saveAndNewButton.addEventListener("click", () => saveToPosts(true));
+publishButton.addEventListener("click", publishPost);
 downloadButton.addEventListener("click", downloadMarkdown);
 insertLocalImageButton.addEventListener("click", handleLocalImageInsert);
 insertRemoteImageButton.addEventListener("click", insertRemoteImageTemplate);
@@ -1394,7 +1482,10 @@ postListEl.addEventListener("click", (event) => {
 });
 
 [titleInput, langInput, publishInput, excerptInput, bodyInput].forEach((element) => {
-  element.addEventListener("input", renderPreview);
+  element.addEventListener("input", () => {
+    setPublishAvailability(null);
+    renderPreview();
+  });
 });
 
 slugInput.addEventListener("input", () => {
@@ -1405,6 +1496,7 @@ slugInput.addEventListener("input", () => {
 
   state.slugTouched = slugInput.value.trim().length > 0;
   slugInput.value = safeSlug(slugInput.value);
+  setPublishAvailability(null);
   renderPreview();
 });
 
@@ -1433,6 +1525,7 @@ enterCreateMode({
   focus: false
 });
 state.uiReady = true;
+setPublishAvailability(null);
 renderPostList();
 renderTags();
 renderPreview();

@@ -12,6 +12,7 @@ $logFile = Join-Path $tmpDir "post-composer-server.log"
 $errFile = Join-Path $tmpDir "post-composer-server.err.log"
 $pythonExe = (Get-Command python).Source
 $url = "http://127.0.0.1:$Port/post-composer.html"
+$serverScript = Join-Path $toolsDir "post_composer_server.py"
 
 function Test-ComposerServer {
   param([int]$ServerPort)
@@ -43,7 +44,7 @@ if (Test-Path $pidFile) {
 if (-not (Test-ComposerServer -ServerPort $Port)) {
   $process = Start-Process `
     -FilePath $pythonExe `
-    -ArgumentList "-m", "http.server", $Port, "--bind", "127.0.0.1", "--directory", $toolsDir `
+    -ArgumentList $serverScript, "--port", $Port `
     -RedirectStandardOutput $logFile `
     -RedirectStandardError $errFile `
     -PassThru

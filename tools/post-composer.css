@@ -479,6 +479,14 @@ details[open] summary {
   color: var(--accent-deep);
 }
 
+.action-button.secondary[disabled],
+.action-button.primary[disabled],
+.action-button.ghost[disabled] {
+  cursor: not-allowed;
+  opacity: 0.64;
+  transform: none;
+}
+
 .action-button.ghost {
   background: rgba(23, 50, 52, 0.08);
   color: var(--accent-deep);

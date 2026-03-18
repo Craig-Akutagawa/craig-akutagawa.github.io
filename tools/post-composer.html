@@ -128,6 +128,7 @@
                 <li>标签支持复用已有值；输入后按 <code>Enter</code>、逗号，或直接失焦都会加入</li>
                 <li>草稿会自动保存在浏览器本地，下次打开会自动恢复</li>
                 <li>编辑模式会覆盖原 Markdown 文件，并保持原文件名与图片目录稳定</li>
+                <li>保存成功后会出现 <code>提交并推送</code>，只提交当前贴文及其图片目录</li>
                 <li><code>Ctrl + S</code> / <code>Cmd + S</code> 直接保存，<code>Shift</code> + 保存会进入下一篇</li>
                 <li>如果浏览器不支持本地写入，仍然可以下载 Markdown 文件</li>
               </ul>
@@ -187,6 +188,7 @@
             <div class="action-row">
               <button class="action-button primary" id="save-post" type="button">保存文章</button>
               <button class="action-button secondary" id="save-and-new" type="button">保存并继续写下一篇</button>
+              <button class="action-button secondary hidden" id="publish-post" type="button">提交并推送</button>
               <button class="action-button ghost" id="download-post" type="button">下载 Markdown</button>
             </div>
 

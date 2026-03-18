@@ -501,6 +501,22 @@
     padding: 0;
   }
 
+  .archive-local-actions {
+    margin: 0 0 1.15rem;
+    padding: 1rem 1.05rem;
+    border: 1px solid rgba(24, 50, 51, 0.1);
+    border-radius: 18px;
+    background: linear-gradient(180deg, rgba(228, 240, 235, 0.5), rgba(255, 255, 255, 0.96));
+  }
+
+  .archive-local-actions[hidden] {
+    display: none;
+  }
+
+  .archive-local-actions-link {
+    width: fit-content;
+  }
+
   .archive-list li {
     display: flex;
     gap: 1rem;
@@ -916,7 +932,10 @@
 
 <article class="page-shell archive-page" lang="en-US">
     
-    
+    <div class="archive-local-actions" id="archive-local-actions" hidden="">
+  <a class="button-link archive-local-actions-link" href="http://127.0.0.1:4173/post-composer.html">发新文章</a>
+</div>
+
 <ul class="archive-list archive-timeline">
   
   <li class="archive-item">
@@ -969,9 +988,9 @@
   </li>
   
   <li class="archive-item">
-    <span class="archive-date">Mar 9, 2026</span>
+    <span class="archive-date">Mar 7, 2026</span>
     <div class="archive-entry">
-      <a href="/2026/03/09/where-is-my-pork-burger/">我的猪猪堡呢？？</a>
+      <a href="/2026/03/07/where-is-my-pork-burger/">我的猪猪堡呢？？</a>
       
       <div class="tag-row tag-row-compact" aria-label="Post tags">
         
@@ -984,6 +1003,43 @@
   </li>
   
 </ul>
+
+<script>
+  (function () {
+    var container = document.getElementById("archive-local-actions");
+    if (!container || !window.fetch) {
+      return;
+    }
+
+    var controller = typeof AbortController === "function" ? new AbortController() : null;
+    var timeoutId = window.setTimeout(function () {
+      if (controller) {
+        controller.abort();
+      }
+    }, 1200);
+
+    fetch("http://127.0.0.1:4173/status", {
+      method: "GET",
+      cache: "no-store",
+      mode: "cors",
+      signal: controller ? controller.signal : undefined
+    })
+      .then(function (response) {
+        return response.ok ? response.json() : null;
+      })
+      .then(function (payload) {
+        if (payload && payload.ok === true && payload.service === "post-composer") {
+          container.hidden = false;
+        }
+      })
+      .catch(function () {
+        // Keep the local action hidden when the composer is unavailable.
+      })
+      .finally(function () {
+        window.clearTimeout(timeoutId);
+      });
+  })();
+</script>
 
 
 </article>
