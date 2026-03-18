@@ -1,12 +1,15 @@
 const STORAGE_DB = "post-composer-db";
 const STORAGE_STORE = "handles";
 const STORAGE_KEY = "repo-root";
+const DRAFT_STORAGE_KEY = "post-composer-draft-v1";
 
 const titleInput = document.querySelector("#title");
 const langInput = document.querySelector("#lang");
 const publishInput = document.querySelector("#publishAt");
 const slugInput = document.querySelector("#slug");
 const excerptInput = document.querySelector("#excerpt");
+const tagsInput = document.querySelector("#tags-input");
+const addTagButton = document.querySelector("#add-tag");
 const bodyInput = document.querySelector("#body");
 const statusEl = document.querySelector("#status");
 const fileNameEl = document.querySelector("#file-name");
@@ -14,10 +17,13 @@ const outputMetaEl = document.querySelector("#output-meta");
 const previewHost = document.querySelector("#preview-host");
 const previewTitle = document.querySelector("#preview-title");
 const previewDate = document.querySelector("#preview-date");
+const previewTags = document.querySelector("#preview-tags");
 const editorStats = document.querySelector("#editor-stats");
 const imagePicker = document.querySelector("#image-picker");
 const connectionChip = document.querySelector("#connection-chip");
 const connectionCopy = document.querySelector("#connection-copy");
+const selectedTagsEl = document.querySelector("#selected-tags");
+const availableTagsEl = document.querySelector("#available-tags");
 const pickProjectButton = document.querySelector("#pick-project");
 const forgetProjectButton = document.querySelector("#forget-project");
 const saveButton = document.querySelector("#save-post");
@@ -29,8 +35,11 @@ const toolbarButtons = document.querySelectorAll("[data-action]");
 const state = {
   repoHandle: null,
   slugTouched: false,
+  selectedTags: [],
+  availableTags: [],
   supportsFsAccess: typeof window.showDirectoryPicker === "function",
-  dbReady: null
+  dbReady: null,
+  uiReady: false
 };
 
 function pad(value) {
@@ -132,6 +141,108 @@ function yamlString(value) {
   return "\"" + value.replace(/\\/g, "\\\\").replace(/"/g, "\\\"") + "\"";
 }
 
+function normalizeTag(value) {
+  return value.replace(/\s+/g, " ").trim();
+}
+
+function escapeHtml(value) {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function parseTagTokens(raw) {
+  return raw
+    .split(",")
+    .map((token) => normalizeTag(token))
+    .filter(Boolean);
+}
+
+function hasTag(tag) {
+  return state.selectedTags.some((item) => item.toLowerCase() === tag.toLowerCase());
+}
+
+function addTag(tag) {
+  const normalized = normalizeTag(tag);
+  if (!normalized || hasTag(normalized)) {
+    return false;
+  }
+
+  state.selectedTags.push(normalized);
+  renderTags();
+  return true;
+}
+
+function removeTag(tag) {
+  state.selectedTags = state.selectedTags.filter((item) => item.toLowerCase() !== tag.toLowerCase());
+  renderTags();
+}
+
+function collectPendingTags() {
+  const pending = parseTagTokens(tagsInput.value);
+  if (!pending.length) {
+    return;
+  }
+
+  pending.forEach(addTag);
+  tagsInput.value = "";
+  renderTags();
+}
+
+function renderSelectedTags() {
+  if (!state.selectedTags.length) {
+    selectedTagsEl.innerHTML = "<span class=\"tag-empty\">还没有标签</span>";
+    return;
+  }
+
+  selectedTagsEl.innerHTML = state.selectedTags.map((tag) => (
+    "<button class=\"tag-pill selected\" type=\"button\" data-remove-tag=\"" + escapeHtml(tag) + "\">" +
+      "<span>" + escapeHtml(tag) + "</span>" +
+      "<span class=\"tag-pill-remove\" aria-hidden=\"true\">×</span>" +
+    "</button>"
+  )).join("");
+}
+
+function renderAvailableTags() {
+  const filter = normalizeTag(tagsInput.value).toLowerCase();
+  const available = state.availableTags.filter((tag) => !hasTag(tag)).filter((tag) => (
+    !filter || tag.toLowerCase().includes(filter)
+  ));
+
+  if (!available.length) {
+    availableTagsEl.innerHTML = "<span class=\"tag-empty\">没有可复用的标签</span>";
+    return;
+  }
+
+  availableTagsEl.innerHTML = available.map((tag) => (
+    "<button class=\"tag-pill suggestion\" type=\"button\" data-add-tag=\"" + escapeHtml(tag) + "\">" +
+      escapeHtml(tag) +
+    "</button>"
+  )).join("");
+}
+
+function renderPreviewTags() {
+  if (!state.selectedTags.length) {
+    previewTags.innerHTML = "";
+    previewTags.hidden = true;
+    return;
+  }
+
+  previewTags.hidden = false;
+  previewTags.innerHTML = state.selectedTags.map((tag) => (
+    "<span class=\"preview-tag\">" + escapeHtml(tag) + "</span>"
+  )).join("");
+}
+
+function renderTags() {
+  renderSelectedTags();
+  renderAvailableTags();
+  renderPreviewTags();
+  persistDraft();
+}
+
 function getCurrentSlug() {
   return safeSlug(slugInput.value.trim()) || slugFromTitle(titleInput.value.trim());
 }
@@ -162,6 +273,12 @@ function buildMarkdown() {
   }
 
   lines.push("lang: " + langInput.value);
+  if (state.selectedTags.length) {
+    lines.push("tags:");
+    state.selectedTags.forEach((tag) => {
+      lines.push("  - " + yamlString(tag));
+    });
+  }
   lines.push("---");
   lines.push("");
   lines.push(body);
@@ -279,14 +396,92 @@ function renderPreview() {
     previewDate.textContent = "POST";
     previewTitle.textContent = "在左边输入标题和正文";
     previewHost.innerHTML = "<p class=\"preview-empty\">这里会渲染接近博客文章页的预览，包括标题、段落、列表、代码块和图片。</p>";
+    renderPreviewTags();
     return;
   }
 
   fileNameEl.textContent = buildFileName();
-  outputMetaEl.textContent = "语言：" + langInput.value + " | 摘要：" + (buildExcerpt() || "自动留空");
+  outputMetaEl.textContent = "语言：" + langInput.value + " | 标签：" + (state.selectedTags.length || 0) + " | 摘要：" + (buildExcerpt() || "自动留空");
   previewDate.textContent = formatPreviewDate(publishInput.value, langInput.value);
   previewTitle.textContent = title || "Untitled Post";
   previewHost.innerHTML = body ? renderMarkdown(body) : "<p class=\"preview-empty\">正文为空。</p>";
+  renderPreviewTags();
+  persistDraft();
+}
+
+function snapshotDraft() {
+  return {
+    title: titleInput.value,
+    lang: langInput.value,
+    publishAt: publishInput.value,
+    slug: slugInput.value,
+    excerpt: excerptInput.value,
+    body: bodyInput.value,
+    tags: state.selectedTags.slice()
+  };
+}
+
+function hasDraftContent(draft) {
+  return Boolean(
+    draft.title.trim() ||
+    draft.slug.trim() ||
+    draft.excerpt.trim() ||
+    draft.body.trim() ||
+    draft.tags.length
+  );
+}
+
+function clearDraft() {
+  if (!("localStorage" in window)) {
+    return;
+  }
+
+  window.localStorage.removeItem(DRAFT_STORAGE_KEY);
+}
+
+function persistDraft() {
+  if (!state.uiReady || !("localStorage" in window)) {
+    return;
+  }
+
+  const draft = snapshotDraft();
+  if (!hasDraftContent(draft)) {
+    clearDraft();
+    return;
+  }
+
+  window.localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(draft));
+}
+
+function restoreDraft() {
+  if (!("localStorage" in window)) {
+    return false;
+  }
+
+  const raw = window.localStorage.getItem(DRAFT_STORAGE_KEY);
+  if (!raw) {
+    return false;
+  }
+
+  try {
+    const draft = JSON.parse(raw);
+    titleInput.value = typeof draft.title === "string" ? draft.title : "";
+    langInput.value = typeof draft.lang === "string" ? draft.lang : langInput.value;
+    publishInput.value = typeof draft.publishAt === "string" && draft.publishAt ? draft.publishAt : defaultDateTimeLocal();
+    slugInput.value = typeof draft.slug === "string" ? safeSlug(draft.slug) : "";
+    excerptInput.value = typeof draft.excerpt === "string" ? draft.excerpt : "";
+    bodyInput.value = typeof draft.body === "string" ? draft.body : "";
+    state.selectedTags = Array.isArray(draft.tags)
+      ? draft.tags.map((tag) => normalizeTag(String(tag))).filter(Boolean).filter((tag, index, list) => (
+        list.findIndex((item) => item.toLowerCase() === tag.toLowerCase()) === index
+      ))
+      : [];
+    state.slugTouched = slugInput.value.trim().length > 0;
+    return hasDraftContent(snapshotDraft());
+  } catch (error) {
+    clearDraft();
+    return false;
+  }
 }
 
 function ensureFsSupport() {
@@ -371,17 +566,96 @@ async function repoHasPostsDirectory(handle) {
   }
 }
 
+async function readTextFile(fileHandle) {
+  const file = await fileHandle.getFile();
+  return file.text();
+}
+
+function parseTagsFromFrontMatter(source) {
+  const match = source.match(/^---\n([\s\S]*?)\n---/);
+  if (!match) {
+    return [];
+  }
+
+  const lines = match[1].split("\n");
+  const tags = [];
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index];
+    if (!/^tags:\s*/.test(line)) {
+      continue;
+    }
+
+    const inline = line.replace(/^tags:\s*/, "").trim();
+    if (inline.startsWith("[") && inline.endsWith("]")) {
+      inline.slice(1, -1).split(",").map((item) => normalizeTag(item.replace(/^['"]|['"]$/g, ""))).filter(Boolean).forEach((tag) => tags.push(tag));
+      break;
+    }
+
+    for (let child = index + 1; child < lines.length; child += 1) {
+      const tagLine = lines[child];
+      if (!/^\s*-\s+/.test(tagLine)) {
+        break;
+      }
+      const value = normalizeTag(tagLine.replace(/^\s*-\s+/, "").replace(/^['"]|['"]$/g, ""));
+      if (value) {
+        tags.push(value);
+      }
+    }
+    break;
+  }
+
+  return tags;
+}
+
+async function loadAvailableTags() {
+  if (!state.repoHandle || !await repoHasPostsDirectory(state.repoHandle)) {
+    state.availableTags = [];
+    renderTags();
+    return;
+  }
+
+  try {
+    const postsDir = await getPostsDirectory();
+    const tags = new Map();
+
+    for await (const entry of postsDir.values()) {
+      if (entry.kind !== "file" || !entry.name.endsWith(".md")) {
+        continue;
+      }
+
+      const content = await readTextFile(entry);
+      parseTagsFromFrontMatter(content).forEach((tag) => {
+        const key = tag.toLowerCase();
+        if (!tags.has(key)) {
+          tags.set(key, tag);
+        }
+      });
+    }
+
+    state.availableTags = Array.from(tags.values()).sort((left, right) => left.localeCompare(right, "en"));
+    renderTags();
+  } catch (error) {
+    setStatus("读取已有标签失败：" + error.message, "warn");
+  }
+}
+
 async function updateConnectionUi() {
   if (!state.repoHandle) {
     setConnectionState("offline", "未连接项目目录", "第一次使用时，选择整个项目根目录。之后就能同时保存文章和图片。");
+    state.availableTags = [];
+    renderTags();
     return;
   }
 
   const hasPosts = await repoHasPostsDirectory(state.repoHandle);
   if (hasPosts) {
     setConnectionState("", "项目目录已连接", "已连接到 " + state.repoHandle.name + "，可以写入 _posts 和 assets/posts。");
+    await loadAvailableTags();
   } else {
     setConnectionState("warn", "目录不完整", "已选中 " + state.repoHandle.name + "，但里面找不到 _posts，保存时会被阻止。");
+    state.availableTags = [];
+    renderTags();
   }
 }
 
@@ -568,6 +842,7 @@ async function importImages(files) {
 }
 
 async function saveToPosts(resetAfterSave) {
+  collectPendingTags();
   const title = titleInput.value.trim();
   const body = bodyInput.value.trim();
 
@@ -592,6 +867,7 @@ async function saveToPosts(resetAfterSave) {
     const writable = await fileHandle.createWritable();
     await writable.write(buildMarkdown());
     await writable.close();
+    await loadAvailableTags();
 
     if (resetAfterSave) {
       resetComposer();
@@ -607,6 +883,7 @@ async function saveToPosts(resetAfterSave) {
 }
 
 function downloadMarkdown() {
+  collectPendingTags();
   const title = titleInput.value.trim();
   const body = bodyInput.value.trim();
 
@@ -632,8 +909,11 @@ function resetComposer() {
   excerptInput.value = "";
   bodyInput.value = "";
   slugInput.value = "";
+  tagsInput.value = "";
   publishInput.value = defaultDateTimeLocal();
+  state.selectedTags = [];
   state.slugTouched = false;
+  renderTags();
   renderPreview();
   bodyInput.focus();
 }
@@ -649,6 +929,33 @@ saveAndNewButton.addEventListener("click", () => saveToPosts(true));
 downloadButton.addEventListener("click", downloadMarkdown);
 insertImageButton.addEventListener("click", handleImageInsert);
 imagePicker.addEventListener("change", (event) => importImages(Array.from(event.target.files || [])));
+addTagButton.addEventListener("click", collectPendingTags);
+
+tagsInput.addEventListener("keydown", (event) => {
+  if (event.key === "Enter" || event.key === ",") {
+    event.preventDefault();
+    collectPendingTags();
+  }
+});
+
+tagsInput.addEventListener("input", renderTags);
+tagsInput.addEventListener("blur", collectPendingTags);
+
+selectedTagsEl.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-remove-tag]");
+  if (!button) {
+    return;
+  }
+  removeTag(button.dataset.removeTag);
+});
+
+availableTagsEl.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-add-tag]");
+  if (!button) {
+    return;
+  }
+  addTag(button.dataset.addTag);
+});
 
 [titleInput, langInput, publishInput, excerptInput, bodyInput].forEach((element) => {
   element.addEventListener("input", renderPreview);
@@ -661,6 +968,22 @@ slugInput.addEventListener("input", () => {
 });
 
 publishInput.value = defaultDateTimeLocal();
+const restoredDraft = restoreDraft();
+state.uiReady = true;
+renderTags();
 renderPreview();
 updateConnectionUi();
 restoreProjectHandle();
+
+if (restoredDraft) {
+  setStatus("已恢复上次未完成的草稿。", "success");
+}
+
+window.addEventListener("keydown", (event) => {
+  if (!(event.ctrlKey || event.metaKey) || event.key.toLowerCase() !== "s") {
+    return;
+  }
+
+  event.preventDefault();
+  saveToPosts(event.shiftKey);
+});

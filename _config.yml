@@ -8,6 +8,20 @@ theme: jekyll-theme-cayman
 show_downloads: false
 permalink: pretty
 markdown: kramdown
+comments:
+  enabled: true
+  provider: giscus
+  repo: Craig-Akutagawa/craig-akutagawa.github.io
+  repo_id: R_kgDORiDlFg
+  category: Announcements
+  category_id: DIC_kwDORiDlFs4C4tf3
+  mapping: pathname
+  strict: 0
+  reactions_enabled: 1
+  emit_metadata: 0
+  input_position: bottom
+  theme: preferred_color_scheme
+  lang: zh-CN
 exclude:
   - tools
   - tmp

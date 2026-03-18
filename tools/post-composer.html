@@ -60,6 +60,20 @@
                     <input id="publishAt" name="publishAt" type="datetime-local" required>
                   </label>
                 </div>
+
+                <div class="field-group">
+                  <span class="field-label">标签</span>
+                  <div class="tag-input-row">
+                    <input id="tags-input" name="tags" type="text" placeholder="输入标签后按 Enter 或逗号">
+                    <button class="action-button secondary compact" id="add-tag" type="button">添加标签</button>
+                  </div>
+                  <span class="field-help">支持多个标签。已存在的标签会在下面显示，点一下即可复用。</span>
+                  <div class="tag-chip-list" id="selected-tags" aria-live="polite"></div>
+                  <div class="tag-suggestions">
+                    <div class="tag-suggestions-title">已有标签</div>
+                    <div class="tag-chip-list tag-chip-list-muted" id="available-tags" aria-live="polite"></div>
+                  </div>
+                </div>
               </div>
 
               <details id="advanced-fields">
@@ -89,6 +103,9 @@
                 <li><code>**粗体**</code>、<code>*斜体*</code>、<code>`行内代码`</code></li>
                 <li><code># 一级标题</code>、<code>## 二级标题</code>、引用、列表、任务列表</li>
                 <li>插入图片时会自动复制到 <code>assets/posts/&lt;slug&gt;/</code></li>
+                <li>标签支持复用已有值；输入后按 <code>Enter</code>、逗号，或直接失焦都会加入</li>
+                <li>草稿会自动保存在浏览器本地，下次打开会自动恢复</li>
+                <li><code>Ctrl + S</code> / <code>Cmd + S</code> 直接保存，<code>Shift</code> + 保存会进入下一篇</li>
                 <li>如果浏览器不支持本地写入，仍然可以下载 Markdown 文件</li>
               </ul>
             </section>
@@ -163,6 +180,7 @@
 
               <article class="preview-article">
                 <p class="preview-date" id="preview-date">POST</p>
+                <div class="preview-tags" id="preview-tags"></div>
                 <h1 id="preview-title">在左边输入标题和正文</h1>
                 <div class="preview-body" id="preview-host">
                   <p class="preview-empty">这里会渲染接近博客文章页的预览，包括标题、段落、列表、代码块和图片。</p>

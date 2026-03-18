@@ -231,6 +231,71 @@ textarea {
   line-height: 1.6;
 }
 
+.tag-input-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.action-button.compact {
+  padding: 11px 13px;
+}
+
+.tag-suggestions {
+  display: grid;
+  gap: 8px;
+}
+
+.tag-suggestions-title {
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.tag-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tag-chip-list-muted {
+  min-height: 36px;
+}
+
+.tag-pill {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(23, 50, 52, 0.14);
+  border-radius: 999px;
+  background: rgba(27, 100, 93, 0.08);
+  color: var(--accent-deep);
+  padding: 8px 12px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.tag-pill.selected {
+  background: rgba(27, 100, 93, 0.14);
+  font-weight: 700;
+}
+
+.tag-pill.suggestion {
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.tag-pill-remove {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.tag-empty {
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
 details {
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
@@ -422,6 +487,28 @@ details[open] summary {
   text-transform: uppercase;
 }
 
+.preview-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 0.75rem;
+}
+
+.preview-tags[hidden] {
+  display: none;
+}
+
+.preview-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.34rem 0.66rem;
+  border-radius: 999px;
+  background: rgba(27, 100, 93, 0.08);
+  color: var(--accent-deep);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
 .preview-article h1 {
   font-size: clamp(2rem, 3vw, 2.9rem);
   margin-bottom: 0.7rem;
@@ -572,6 +659,10 @@ details[open] summary {
   .editor-meta {
     grid-template-columns: 1fr;
     display: grid;
+  }
+
+  .tag-input-row {
+    grid-template-columns: 1fr;
   }
 
   .panel-inner,

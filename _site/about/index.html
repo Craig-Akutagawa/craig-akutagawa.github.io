@@ -1,7 +1,9 @@
 
 
+
+
 <!DOCTYPE html>
-<html lang="en-US">
+<html lang="ja">
   <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -10,9 +12,9 @@
 <title>About | Craig Akutagawa</title>
 <meta name="generator" content="Jekyll v4.4.1" />
 <meta property="og:title" content="About" />
-<meta property="og:locale" content="en_US" />
-<meta name="description" content="A short introduction to the person behind the site and the kind of writing that will live here." />
-<meta property="og:description" content="A short introduction to the person behind the site and the kind of writing that will live here." />
+<meta property="og:locale" content="ja" />
+<meta name="description" content="ようこそ　クレゴの世界へ" />
+<meta property="og:description" content="ようこそ　クレゴの世界へ" />
 <link rel="canonical" href="http://localhost:4000/about/" />
 <meta property="og:url" content="http://localhost:4000/about/" />
 <meta property="og:site_name" content="Craig Akutagawa" />
@@ -20,7 +22,7 @@
 <meta name="twitter:card" content="summary" />
 <meta property="twitter:title" content="About" />
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"WebSite","description":"A short introduction to the person behind the site and the kind of writing that will live here.","headline":"About","name":"Craig Akutagawa","url":"http://localhost:4000/about/"}</script>
+{"@context":"https://schema.org","@type":"WebSite","description":"ようこそ　クレゴの世界へ","headline":"About","name":"Craig Akutagawa","url":"http://localhost:4000/about/"}</script>
 <!-- End Jekyll SEO tag -->
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -43,26 +45,13 @@
     --accent-deep: #123f43;
     --accent-soft: #e4f0eb;
     --shadow: 0 20px 45px rgba(18, 63, 67, 0.12);
-    --font-sans-latin: "Aptos", "Trebuchet MS", "Segoe UI", sans-serif;
-    --font-serif-latin: "Iowan Old Style", "Palatino Linotype", Georgia, "Times New Roman", serif;
-    --font-cjk-sans-hant: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", "Noto Sans JP", "Hiragino Sans",
-      "Yu Gothic", "Meiryo", sans-serif;
-    --font-cjk-sans-hans: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", "Noto Sans TC", "Noto Sans JP",
-      "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
-    --font-cjk-sans-ja: "Noto Sans JP", "Hiragino Sans", "Yu Gothic", "Meiryo", "Noto Sans TC",
-      "PingFang TC", sans-serif;
-    --font-cjk-serif-hant: "Noto Serif TC", "Source Han Serif TC", "PMingLiU", "Noto Serif JP",
-      "Hiragino Mincho ProN", "Yu Mincho", serif;
-    --font-cjk-serif-hans: "Noto Serif SC", "Songti SC", "STSong", "Noto Serif TC", "Noto Serif JP",
-      "Hiragino Mincho ProN", "Yu Mincho", serif;
-    --font-cjk-serif-ja: "Noto Serif JP", "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif TC",
-      "Source Han Serif TC", serif;
+    --font-ui-latin: "Aptos", "Trebuchet MS", "Segoe UI", sans-serif;
+    --font-display-latin: "Iowan Old Style", "Palatino Linotype", Georgia, "Times New Roman", serif;
+    --font-ui-ja: "Noto Sans JP", "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
+    --font-display-ja: "Noto Serif JP", "Hiragino Mincho ProN", "Yu Mincho", serif;
     --font-ui-mixed: "Aptos", "Trebuchet MS", "Segoe UI", "Noto Sans TC", "Noto Sans SC", "Noto Sans JP",
       "PingFang TC", "PingFang SC", "Microsoft JhengHei", "Microsoft YaHei", "Hiragino Sans", "Yu Gothic",
       "Meiryo", sans-serif;
-    --font-display-mixed: "Iowan Old Style", "Palatino Linotype", Georgia, "Times New Roman", "Noto Serif TC",
-      "Noto Serif SC", "Noto Serif JP", "Source Han Serif TC", "PMingLiU", "Hiragino Mincho ProN",
-      "Yu Mincho", serif;
   }
 
   html {
@@ -83,33 +72,54 @@
       radial-gradient(circle at top left, rgba(255, 255, 255, 0.18), transparent 28%),
       radial-gradient(circle at bottom right, rgba(240, 195, 106, 0.16), transparent 24%),
       linear-gradient(135deg, #123f43 0%, #1f6b63 48%, #3f8c7d 100%);
-    padding: 4.75rem 1rem 6rem;
     text-align: center;
   }
 
+  .page-header-home {
+    padding: 4.9rem 1rem 6.1rem;
+  }
+
+  .page-header-compact {
+    padding: 4.9rem 1rem 6.1rem;
+  }
+
   .project-name {
-    font-family: var(--font-display-mixed);
-    font-size: clamp(2.5rem, 6vw, 4.4rem);
-    letter-spacing: -0.03em;
-    line-height: 1.08;
-    margin-bottom: 0.5rem;
+    margin: 0;
+    font-family: var(--font-display-latin);
+    font-size: clamp(2.7rem, 6vw, 4.6rem);
+    letter-spacing: -0.032em;
+    line-height: 1;
     text-wrap: balance;
+    text-shadow: 0 2px 0 rgba(10, 37, 39, 0.12);
+  }
+
+  .page-header-compact .project-name {
+    font-size: clamp(2.7rem, 6vw, 4.6rem);
   }
 
   .project-tagline {
-    max-width: 42rem;
-    margin: 0 auto;
-    color: rgba(255, 255, 255, 0.88);
-    font-size: 1.05rem;
+    max-width: 30rem;
+    margin: 0.9rem auto 0;
+    color: rgba(247, 249, 247, 0.9);
+    font-size: 0.96rem;
+    line-height: 1.5;
+  }
+
+  .project-tagline:lang(ja) {
+    font-family: var(--font-display-ja);
+    font-size: 0.92rem;
+    letter-spacing: 0.075em;
+  }
+
+  .page-header-compact .project-tagline {
+    margin-top: 0.9rem;
   }
 
   .main-content {
     position: relative;
-    margin-top: -3.5rem;
-    max-width: 960px;
+    margin: -2.9rem auto 0;
+    max-width: 1120px;
     padding: 0 1.25rem 4rem;
-    margin-left: auto;
-    margin-right: auto;
   }
 
   .main-content > :first-child {
@@ -117,7 +127,7 @@
   }
 
   .site-nav,
-  .page-intro,
+  .home-hero,
   .content-section,
   .page-shell {
     background: var(--surface);
@@ -131,15 +141,16 @@
     gap: 0.75rem;
     align-items: center;
     padding: 0.8rem;
-    margin-bottom: 1.25rem;
+    margin-bottom: 1.2rem;
     flex-wrap: wrap;
   }
 
   .site-nav a {
     color: var(--accent-deep);
     text-decoration: none;
-    padding: 0.55rem 0.9rem;
+    padding: 0.55rem 0.95rem;
     border-radius: 999px;
+    font-family: var(--font-ui-latin);
     font-size: 0.95rem;
     font-weight: 600;
     white-space: nowrap;
@@ -150,19 +161,20 @@
     background: var(--accent-soft);
   }
 
-  .page-intro {
-    padding: 2rem;
-    margin-bottom: 1.25rem;
+  .home-hero {
+    padding: 2.05rem;
+    margin-bottom: 1.2rem;
     background: linear-gradient(140deg, rgba(240, 195, 106, 0.18), rgba(240, 195, 106, 0) 34%), var(--surface);
   }
 
-  .page-intro-kicker,
+  .home-hero-kicker,
   .section-label,
   .page-kicker,
   .post-date,
   .post-meta,
   .archive-date,
   .about-eyebrow {
+    margin: 0;
     text-transform: uppercase;
     letter-spacing: 0.12em;
     font-size: 0.76rem;
@@ -170,26 +182,17 @@
     color: var(--muted);
   }
 
-  .page-intro-title,
-  .section-heading h2,
-  .page-heading h1,
-  .post-card h3,
-  .about-name,
-  .about-card h2,
-  .archive-entry a {
-    font-family: var(--font-display-mixed);
+  .home-hero-title {
+    margin: 0.35rem 0 0.85rem;
+    font-family: var(--font-display-latin);
     color: var(--accent-deep);
-    letter-spacing: -0.025em;
+    font-size: clamp(2.15rem, 4.2vw, 3.65rem);
+    letter-spacing: -0.028em;
+    line-height: 1.03;
     text-wrap: balance;
   }
 
-  .page-intro-title {
-    font-size: clamp(2rem, 4vw, 3.5rem);
-    line-height: 1.05;
-    margin: 0.35rem 0 0.9rem;
-  }
-
-  .page-intro-copy,
+  .home-hero-copy,
   .page-lead,
   .post-card p,
   .note-card p,
@@ -201,7 +204,38 @@
     overflow-wrap: break-word;
   }
 
-  .page-intro-copy {
+  .tag-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin: 0.55rem 0 0;
+  }
+
+  .tag-row-post {
+    margin: 0.9rem 0 0;
+  }
+
+  .tag-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.36rem 0.72rem;
+    border-radius: 999px;
+    background: rgba(31, 107, 99, 0.1);
+    color: var(--accent-deep);
+    border: 1px solid rgba(31, 107, 99, 0.12);
+    font-family: var(--font-ui-latin);
+    font-size: 0.82rem;
+    font-weight: 700;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  .tag-chip-compact {
+    padding: 0.32rem 0.62rem;
+    font-size: 0.77rem;
+  }
+
+  .home-hero-copy {
     margin: 0;
     max-width: 42rem;
   }
@@ -227,10 +261,22 @@
     border-radius: 999px;
     background: var(--accent-deep);
     color: #ffffff;
+    border: 1px solid rgba(8, 35, 37, 0.18);
   }
 
   .button-link:hover {
     background: #0d3133;
+  }
+
+  .hero-actions .button-link:not(.button-link-secondary) {
+    background: linear-gradient(180deg, #14545a 0%, #0f4348 100%);
+    color: #f8fbfa;
+    box-shadow: 0 10px 20px rgba(18, 63, 67, 0.14);
+  }
+
+  .hero-actions .button-link:not(.button-link-secondary):hover {
+    background: linear-gradient(180deg, #186168 0%, #11494f 100%);
+    color: #ffffff;
   }
 
   .button-link-secondary {
@@ -244,13 +290,8 @@
 
   .content-section,
   .page-shell {
-    padding: 1.75rem 2rem;
-    margin-bottom: 1.25rem;
-  }
-
-  .about-page,
-  .archive-page {
-    overflow: hidden;
+    padding: 1.8rem 2rem;
+    margin-bottom: 1.2rem;
   }
 
   .page-shell > :first-child {
@@ -261,6 +302,101 @@
     margin-bottom: 0;
   }
 
+  .page-heading {
+    margin-bottom: 1.65rem;
+    padding-bottom: 1.15rem;
+    border-bottom: 1px solid rgba(24, 50, 51, 0.08);
+  }
+
+  .page-heading-post {
+    margin-bottom: 1.3rem;
+    padding-bottom: 0.95rem;
+  }
+
+  .about-page .page-heading {
+    margin-bottom: 1rem;
+    padding-bottom: 0.85rem;
+  }
+
+  .page-heading-meta {
+    display: flex;
+    gap: 0.9rem;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 0.7rem;
+  }
+
+  .page-heading h1 {
+    margin: 0;
+    font-family: var(--font-display-latin);
+    color: var(--accent-deep);
+    font-size: clamp(2.1rem, 4.1vw, 3rem);
+    letter-spacing: -0.024em;
+    line-height: 1.04;
+    text-wrap: balance;
+  }
+
+  .page-heading-post .post-date {
+    margin: 0 0 0.45rem;
+  }
+
+  .page-lead {
+    max-width: 44rem;
+    margin: 0.8rem 0 0;
+  }
+
+  .page-shell:lang(ja) .page-kicker,
+  .page-shell:lang(ja) .about-eyebrow {
+    font-family: var(--font-ui-ja);
+    text-transform: none;
+    letter-spacing: 0.05em;
+  }
+
+  .page-shell:lang(ja) .page-heading h1 {
+    font-family: var(--font-display-ja);
+    letter-spacing: 0;
+    line-height: 1.16;
+  }
+
+  .page-shell:lang(ja) .page-lead {
+    font-family: var(--font-ui-ja);
+    letter-spacing: 0.01em;
+    line-height: 1.82;
+  }
+
+  .post-comments {
+    margin-top: 2.1rem;
+    padding-top: 1.2rem;
+    border-top: 1px solid rgba(24, 50, 51, 0.08);
+  }
+
+  .post-comments-frame {
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(255, 255, 255, 0.98));
+    padding: 1.25rem 1.3rem;
+  }
+
+  .post-comments-label {
+    margin: 0 0 0.9rem;
+    color: var(--muted);
+    font-family: var(--font-ui-latin);
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .post-comments-widget {
+    min-height: 12rem;
+  }
+
+  .page-shell:lang(ja) .post-comments-label {
+    font-family: var(--font-ui-ja);
+    letter-spacing: 0.05em;
+    text-transform: none;
+  }
+
   .section-heading {
     display: flex;
     justify-content: space-between;
@@ -269,9 +405,14 @@
     margin-bottom: 1.25rem;
   }
 
-  .section-heading h2,
-  .page-heading h1 {
+  .section-heading h2 {
     margin: 0.25rem 0 0;
+    font-family: var(--font-display-latin);
+    color: var(--accent-deep);
+    font-size: clamp(1.8rem, 3vw, 2.45rem);
+    line-height: 1.06;
+    letter-spacing: -0.024em;
+    text-wrap: balance;
   }
 
   .post-grid {
@@ -281,16 +422,23 @@
   }
 
   .post-card,
-  .note-card {
+  .note-card,
+  .about-card {
     border: 1px solid var(--line);
     border-radius: 18px;
-    padding: 1.2rem;
+    padding: 1.3rem;
     background: var(--surface-strong);
   }
 
-  .post-card h3 {
+  .post-card h3,
+  .note-card h3 {
     margin: 0.45rem 0 0.55rem;
+    font-family: var(--font-display-latin);
+    color: var(--accent-deep);
     font-size: 1.45rem;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    text-wrap: pretty;
   }
 
   .post-card a,
@@ -317,31 +465,9 @@
     padding-left: 1.1rem;
   }
 
-  .page-heading {
-    margin-bottom: 1.75rem;
-  }
-
-  .post-meta-bar {
-    display: flex;
-    gap: 0.9rem;
-    align-items: center;
-    flex-wrap: wrap;
-    margin-bottom: 1.5rem;
-    padding-bottom: 0.95rem;
-    border-bottom: 1px solid var(--line);
-  }
-
-  .post-meta-bar .page-kicker,
-  .post-meta-bar .post-date {
-    margin: 0;
-  }
-
-  .page-heading .post-date {
-    margin-top: 0.35rem;
-  }
-
-  .page-heading h1 {
-    font-size: clamp(2rem, 4vw, 3rem);
+  .archive-page,
+  .about-page {
+    overflow: visible;
   }
 
   .archive-list {
@@ -354,7 +480,7 @@
     display: flex;
     gap: 1rem;
     align-items: baseline;
-    padding: 0.9rem 0;
+    padding: 0.95rem 0;
     border-bottom: 1px solid var(--line);
   }
 
@@ -367,6 +493,64 @@
     color: var(--muted);
   }
 
+  .archive-timeline {
+    position: relative;
+    padding-left: 1.1rem;
+  }
+
+  .archive-timeline::before {
+    content: "";
+    position: absolute;
+    top: 0.5rem;
+    bottom: 0.5rem;
+    left: 0.28rem;
+    width: 2px;
+    background: linear-gradient(180deg, rgba(31, 107, 99, 0.38), rgba(31, 107, 99, 0.08));
+  }
+
+  .archive-item {
+    position: relative;
+    align-items: flex-start;
+    gap: 1.35rem;
+    padding: 1rem 0 1.2rem 1.4rem;
+  }
+
+  .archive-item::before {
+    content: "";
+    position: absolute;
+    top: 1.12rem;
+    left: -0.03rem;
+    width: 0.72rem;
+    height: 0.72rem;
+    border-radius: 50%;
+    background: var(--accent-deep);
+    box-shadow: 0 0 0 5px rgba(228, 240, 235, 0.95);
+  }
+
+  .archive-entry {
+    flex: 1;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: var(--surface-strong);
+    padding: 1rem 1.1rem;
+  }
+
+  .archive-entry a {
+    display: inline-block;
+    margin-bottom: 0.42rem;
+    font-family: var(--font-display-latin);
+    font-size: 1.35rem;
+    font-weight: 700;
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+    text-decoration: none;
+    text-wrap: pretty;
+  }
+
+  .archive-entry p {
+    margin: 0;
+  }
+
   .empty-state {
     margin: 0;
   }
@@ -377,17 +561,17 @@
 
   .about-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 1rem;
+    align-items: stretch;
   }
 
   .about-card {
-    border: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
     border-radius: 22px;
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.98)),
-      var(--surface-strong);
-    padding: 1.5rem;
+    padding: 1.45rem;
+    min-height: 100%;
   }
 
   .about-card-primary {
@@ -397,24 +581,41 @@
   }
 
   .about-profile-card {
-    padding: 1.65rem 1.75rem;
+    padding: 1.65rem 1.9rem 1.4rem;
   }
 
   .about-profile-header {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.45rem;
+  }
+
+  .about-profile-identity {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
-    gap: 1.4rem;
-    align-items: start;
+    gap: 1rem 1.7rem;
+    align-items: center;
+  }
+
+  .about-name {
+    margin: 0;
+    font-family: var(--font-display-ja);
+    color: var(--accent-deep);
+    font-size: clamp(2.18rem, 3.35vw, 2.82rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    text-wrap: pretty;
   }
 
   .about-avatar-shell {
     position: relative;
     display: flex;
     justify-content: center;
-    align-items: flex-start;
-    width: clamp(96px, 12vw, 132px);
+    align-items: center;
+    width: clamp(124px, 13vw, 154px);
     flex-shrink: 0;
-    margin-top: 0.25rem;
   }
 
   .about-avatar-shell::before {
@@ -435,42 +636,62 @@
     box-shadow: 0 18px 28px rgba(18, 63, 67, 0.14);
   }
 
-  .about-profile-copy {
-    min-width: 0;
+  .about-role {
+    margin: 0.55rem 0 0;
     max-width: 38rem;
-  }
-
-  .about-name,
-  .about-card h2 {
-    margin: 0.2rem 0 0.65rem;
-  }
-
-  .about-name {
-    font-size: clamp(1.8rem, 3vw, 2.45rem);
+    color: var(--accent);
+    font-family: var(--font-ui-ja);
+    font-size: 1.05rem;
     font-weight: 700;
-    line-height: 1.12;
-    margin-bottom: 0.4rem;
+    line-height: 1.5;
+    letter-spacing: 0.01em;
+  }
+
+  .about-summary {
+    margin: 0.75rem 0 1rem;
+    max-width: 48rem;
+    font-family: var(--font-ui-ja);
+    line-height: 1.8;
+    letter-spacing: 0.01em;
   }
 
   .about-card h2 {
-    font-size: 1.55rem;
+    margin: 0.22rem 0 0.7rem;
+    font-family: var(--font-display-ja);
+    color: var(--accent-deep);
+    font-size: clamp(1.58rem, 2.1vw, 2rem);
+    line-height: 1.14;
+    letter-spacing: 0;
+    text-wrap: pretty;
+  }
+
+  .about-page .about-card p,
+  .about-page .about-card li,
+  .about-page .about-pill-row span {
+    font-family: var(--font-ui-ja);
+    line-height: 1.82;
+    letter-spacing: 0.01em;
+  }
+
+  .about-page .about-card .about-name {
+    font-family: var(--font-display-ja);
+    font-size: clamp(2.18rem, 3.35vw, 2.82rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1;
   }
 
   .about-eyebrow {
     margin: 0;
   }
 
-  .about-role {
-    color: var(--accent);
-    font-size: 1.08rem;
+  .page-shell.about-page:lang(ja) .about-eyebrow {
+    color: var(--accent-deep);
+    font-family: var(--font-display-ja);
+    font-size: 1.02rem;
     font-weight: 700;
-    margin: 0;
-    max-width: 34rem;
-  }
-
-  .about-summary {
-    margin: 1.15rem 0 1.1rem;
-    max-width: 42rem;
+    letter-spacing: 0.015em;
+    line-height: 1.22;
   }
 
   .about-pill-row {
@@ -482,7 +703,7 @@
   .about-pill-row span {
     display: inline-flex;
     align-items: center;
-    padding: 0.5rem 0.85rem;
+    padding: 0.48rem 0.82rem;
     border-radius: 999px;
     background: rgba(18, 63, 67, 0.08);
     color: var(--accent-deep);
@@ -490,68 +711,61 @@
     font-weight: 700;
   }
 
-  .about-facts {
-    margin: 0.85rem 0 0;
-    padding-left: 1.1rem;
+  .about-contact-row {
+    display: flex;
+    gap: 0.8rem;
+    align-items: center;
+    margin-top: 1.25rem;
   }
 
-  .about-facts li + li {
-    margin-top: 0.55rem;
+  .about-icon-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 999px;
+    border: 1px solid rgba(24, 50, 51, 0.12);
+    background: rgba(255, 255, 255, 0.74);
+    color: var(--accent-deep);
+    box-shadow: 0 10px 20px rgba(18, 63, 67, 0.08);
+    transition: transform 140ms ease, background-color 140ms ease, color 140ms ease, border-color 140ms ease;
   }
 
-  .archive-timeline {
-    position: relative;
-    padding-left: 1.1rem;
-  }
-
-  .archive-timeline::before {
-    content: "";
-    position: absolute;
-    top: 0.45rem;
-    bottom: 0.45rem;
-    left: 0.28rem;
-    width: 2px;
-    background: linear-gradient(180deg, rgba(31, 107, 99, 0.38), rgba(31, 107, 99, 0.08));
-  }
-
-  .archive-item {
-    position: relative;
-    align-items: flex-start;
-    gap: 1.35rem;
-    padding: 1rem 0 1.2rem 1.4rem;
-  }
-
-  .archive-item::before {
-    content: "";
-    position: absolute;
-    top: 1.15rem;
-    left: -0.03rem;
-    width: 0.72rem;
-    height: 0.72rem;
-    border-radius: 50%;
+  .about-icon-link:hover {
     background: var(--accent-deep);
-    box-shadow: 0 0 0 5px rgba(228, 240, 235, 0.95);
+    color: #ffffff;
+    border-color: var(--accent-deep);
+    transform: translateY(-1px);
   }
 
-  .archive-entry {
-    flex: 1;
-    border: 1px solid var(--line);
-    border-radius: 18px;
-    background: var(--surface-strong);
-    padding: 1rem 1.1rem;
+  .about-icon-link svg {
+    width: 1.45rem;
+    height: 1.45rem;
+    fill: currentColor;
   }
 
-  .archive-entry a {
-    display: inline-block;
-    font-size: 1.35rem;
-    font-weight: 700;
-    text-decoration: none;
-    margin-bottom: 0.45rem;
+  .about-facts {
+    list-style: none;
+    margin: 0.2rem 0 0;
+    padding: 0;
   }
 
-  .archive-entry p {
-    margin: 0;
-    color: var(--text);
+  .about-facts li {
+    position: relative;
+    padding: 0.8rem 0 0.05rem 1.15rem;
+    border-top: 1px solid rgba(24, 50, 51, 0.1);
+  }
+
+  .about-facts li::before {
+    content: "";
+    position: absolute;
+    top: 1.32rem;
+    left: 0.05rem;
+    width: 0.42rem;
+    height: 0.42rem;
+    border-radius: 50%;
+    background: rgba(31, 107, 99, 0.7);
   }
 
   .site-footer {
@@ -572,102 +786,21 @@
     line-height: 1.6;
   }
 
-  html:lang(zh) body,
-  html:lang(zh-Hant) body {
-    font-family: var(--font-cjk-sans-hant);
-  }
-
-  html:lang(zh-Hans) body {
-    font-family: var(--font-cjk-sans-hans);
-  }
-
-  html:lang(ja) body {
-    font-family: var(--font-cjk-sans-ja);
-  }
-
-  :lang(zh) :is(.project-name, .page-intro-title, .section-heading h2, .page-heading h1, .post-card h3, .about-name, .about-card h2, .archive-entry a),
-  :lang(zh-Hant) :is(.project-name, .page-intro-title, .section-heading h2, .page-heading h1, .post-card h3, .about-name, .about-card h2, .archive-entry a),
-  :is(.project-name, .page-intro-title, .section-heading h2, .page-heading h1, .post-card h3, .about-name, .about-card h2, .archive-entry a):lang(zh),
-  :is(.project-name, .page-intro-title, .section-heading h2, .page-heading h1, .post-card h3, .about-name, .about-card h2, .archive-entry a):lang(zh-Hant) {
-    font-family: var(--font-cjk-serif-hant);
-    letter-spacing: 0;
-    line-height: 1.2;
-    line-break: loose;
-  }
-
-  :lang(zh-Hans) :is(.project-name, .page-intro-title, .section-heading h2, .page-heading h1, .post-card h3, .about-name, .about-card h2, .archive-entry a),
-  :is(.project-name, .page-intro-title, .section-heading h2, .page-heading h1, .post-card h3, .about-name, .about-card h2, .archive-entry a):lang(zh-Hans) {
-    font-family: var(--font-cjk-serif-hans);
-    letter-spacing: 0;
-    line-height: 1.2;
-    line-break: loose;
-  }
-
-  :lang(ja) :is(.project-name, .page-intro-title, .section-heading h2, .page-heading h1, .post-card h3, .about-name, .about-card h2, .archive-entry a),
-  :is(.project-name, .page-intro-title, .section-heading h2, .page-heading h1, .post-card h3, .about-name, .about-card h2, .archive-entry a):lang(ja) {
-    font-family: var(--font-cjk-serif-ja);
-    letter-spacing: 0;
-    line-height: 1.2;
-    line-break: loose;
-  }
-
-  :lang(zh) :is(.page-intro-kicker, .section-label, .page-kicker, .post-date, .post-meta, .archive-date, .about-eyebrow, .site-nav a, .button-link, .text-link),
-  :lang(zh-Hant) :is(.page-intro-kicker, .section-label, .page-kicker, .post-date, .post-meta, .archive-date, .about-eyebrow, .site-nav a, .button-link, .text-link),
-  :is(.page-intro-kicker, .section-label, .page-kicker, .post-date, .post-meta, .archive-date, .about-eyebrow, .site-nav a, .button-link, .text-link):lang(zh),
-  :is(.page-intro-kicker, .section-label, .page-kicker, .post-date, .post-meta, .archive-date, .about-eyebrow, .site-nav a, .button-link, .text-link):lang(zh-Hant) {
-    font-family: var(--font-cjk-sans-hant);
-    letter-spacing: 0.04em;
-    text-transform: none;
-  }
-
-  :lang(zh-Hans) :is(.page-intro-kicker, .section-label, .page-kicker, .post-date, .post-meta, .archive-date, .about-eyebrow, .site-nav a, .button-link, .text-link),
-  :is(.page-intro-kicker, .section-label, .page-kicker, .post-date, .post-meta, .archive-date, .about-eyebrow, .site-nav a, .button-link, .text-link):lang(zh-Hans) {
-    font-family: var(--font-cjk-sans-hans);
-    letter-spacing: 0.04em;
-    text-transform: none;
-  }
-
-  :lang(ja) :is(.page-intro-kicker, .section-label, .page-kicker, .post-date, .post-meta, .archive-date, .about-eyebrow, .site-nav a, .button-link, .text-link),
-  :is(.page-intro-kicker, .section-label, .page-kicker, .post-date, .post-meta, .archive-date, .about-eyebrow, .site-nav a, .button-link, .text-link):lang(ja) {
-    font-family: var(--font-cjk-sans-ja);
-    letter-spacing: 0.04em;
-    text-transform: none;
-  }
-
-  :lang(zh) :is(.page-intro-copy, .page-lead, .post-card p, .note-card p, .main-content p, .main-content li, .archive-entry p, .project-tagline, .about-role, .about-pill-row span),
-  :lang(zh-Hant) :is(.page-intro-copy, .page-lead, .post-card p, .note-card p, .main-content p, .main-content li, .archive-entry p, .project-tagline, .about-role, .about-pill-row span),
-  :is(.page-intro-copy, .page-lead, .post-card p, .note-card p, .main-content p, .main-content li, .archive-entry p, .project-tagline, .about-role, .about-pill-row span):lang(zh),
-  :is(.page-intro-copy, .page-lead, .post-card p, .note-card p, .main-content p, .main-content li, .archive-entry p, .project-tagline, .about-role, .about-pill-row span):lang(zh-Hant) {
-    font-family: var(--font-cjk-sans-hant);
-    letter-spacing: 0.01em;
-    line-height: 1.9;
-    line-break: loose;
-  }
-
-  :lang(zh-Hans) :is(.page-intro-copy, .page-lead, .post-card p, .note-card p, .main-content p, .main-content li, .archive-entry p, .project-tagline, .about-role, .about-pill-row span),
-  :is(.page-intro-copy, .page-lead, .post-card p, .note-card p, .main-content p, .main-content li, .archive-entry p, .project-tagline, .about-role, .about-pill-row span):lang(zh-Hans) {
-    font-family: var(--font-cjk-sans-hans);
-    letter-spacing: 0.01em;
-    line-height: 1.9;
-    line-break: loose;
-  }
-
-  :lang(ja) :is(.page-intro-copy, .page-lead, .post-card p, .note-card p, .main-content p, .main-content li, .archive-entry p, .project-tagline, .about-role, .about-pill-row span),
-  :is(.page-intro-copy, .page-lead, .post-card p, .note-card p, .main-content p, .main-content li, .archive-entry p, .project-tagline, .about-role, .about-pill-row span):lang(ja) {
-    font-family: var(--font-cjk-sans-ja);
-    letter-spacing: 0.01em;
-    line-height: 1.9;
-    line-break: loose;
+  @media (max-width: 1040px) {
+    .about-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
   }
 
   @media (max-width: 700px) {
     .main-content {
+      margin-top: -2.2rem;
       padding: 0 0.85rem 3rem;
     }
 
     .content-section,
     .page-shell,
-    .page-intro {
+    .home-hero {
       padding: 1.35rem;
     }
 
@@ -677,28 +810,42 @@
       display: block;
     }
 
-    .about-profile-header {
-      grid-template-columns: 1fr;
-      gap: 1rem;
+    .page-header-home {
+      padding: 4rem 1rem 5rem;
     }
 
-    .about-avatar-shell {
-      width: 116px;
-      margin: 0 auto 0.25rem;
-      order: -1;
+    .page-header-compact {
+      padding: 4rem 1rem 5rem;
     }
 
-    .about-avatar-shell::before {
-      inset: 8px -4px -6px 8px;
+    .project-name {
+      text-wrap: pretty;
     }
 
-    .post-meta-bar {
+    .page-heading-meta {
       gap: 0.45rem;
     }
 
-    .section-heading .text-link {
-      display: inline-block;
-      margin-top: 0.75rem;
+    .about-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .post-comments-frame {
+      padding: 1rem;
+    }
+
+    .about-profile-header {
+      gap: 0.6rem;
+    }
+
+    .about-profile-identity {
+      grid-template-columns: 1fr;
+      gap: 0.8rem;
+    }
+
+    .about-avatar-shell {
+      width: 120px;
+      margin: 0 auto 0.2rem;
     }
 
     .archive-date {
@@ -723,21 +870,14 @@
       padding-inline: 0.85rem;
       font-size: 0.92rem;
     }
-
-    .project-name,
-    .page-intro-title,
-    .page-heading h1,
-    .about-name {
-      text-wrap: pretty;
-    }
   }
 </style>
 
   </head>
-  <body class="page-lang-en-us" data-page-lang="en-US">
-    <header class="page-header" role="banner">
+  <body class="page-lang-ja page-interior" data-page-lang="ja">
+    <header class="page-header page-header-compact" role="banner">
       <h1 class="project-name">Craig Akutagawa</h1>
-      <h2 class="project-tagline" lang="ja">ようこそ　クレゴの世界へ。</h2>
+      <h2 class="project-tagline" lang="ja">ようこそ　クレゴの世界へ</h2>
     </header>
 
     <main id="content" class="main-content" role="main">
@@ -749,70 +889,79 @@
 
 
 
-
-<section class="page-intro page-intro-page" lang="en-US">
-    <p class="page-intro-kicker">About</p>
-    <h1 class="page-intro-title">About</h1>
-    <p class="page-intro-copy">A short introduction to the person behind the site and the kind of writing that will live here.</p>
-</section>
-
-
-<article class="page-shell about-page" lang="en-US">
+<article class="page-shell about-page" lang="ja">
+    
     <section class="about-profile">
   <div class="about-card about-card-primary about-profile-card">
     <div class="about-profile-header">
-      <div class="about-profile-copy">
-        <p class="about-eyebrow">Profile</p>
-        <p class="about-name">Craig Akutagawa</p>
-        <p class="about-role">Builder, programmer, and keeper of useful notes.</p>
-      </div>
+      <p class="about-eyebrow">プロフィール</p>
 
-      <div class="about-avatar-shell">
-        <img class="about-avatar" src="/assets/avatar-favicon.png" alt="Profile photo of Craig Akutagawa" />
+      <div class="about-profile-identity">
+        <p class="about-name">芥川クレゴ</p>
+        <div class="about-avatar-shell">
+          <img class="about-avatar" src="/assets/avatar-favicon.png" alt="Profile photo of Kurego Akutagawa" />
+        </div>
       </div>
     </div>
 
-    <p class="about-summary">
-      This site is a personal home base for the things I am building, learning, and revisiting. It gives project
-      notes, debugging lessons, and longer reflections one calm place to live without the overhead of a heavy
-      publishing setup.
+    <p class="about-role" lang="ja">ものをつくり、コードを書き、日々の発見を静かに綴っています。</p>
+
+    <p class="about-summary" lang="ja">
+      この場所は、つくっているものや学んだこと、ふと立ち止まって考えたことを置いておくための小さな拠点です。
+      制作の記録やデバッグの覚え書き、あとで読み返したくなる思考の断片を、落ち着いた形で少しずつ残していきます。
     </p>
 
     <div class="about-pill-row">
-      <span>Code</span>
-      <span>Projects</span>
-      <span>Experiments</span>
-      <span>Writing</span>
+      <span>コード</span>
+      <span>プロジェクト</span>
+      <span>実験</span>
+      <span>文章</span>
+    </div>
+
+    <div class="about-contact-row" aria-label="Contact links">
+      <a class="about-icon-link" href="https://github.com/Craig-Akutagawa" target="_blank" rel="noreferrer" aria-label="GitHub">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 2C6.48 2 2 6.58 2 12.23c0 4.52 2.87 8.35 6.84 9.7.5.1.68-.22.68-.49 0-.24-.01-1.03-.01-1.86-2.78.62-3.37-1.21-3.37-1.21-.46-1.18-1.11-1.5-1.11-1.5-.91-.64.07-.63.07-.63 1 .07 1.53 1.06 1.53 1.06.9 1.56 2.35 1.11 2.92.85.09-.67.35-1.11.63-1.37-2.22-.26-4.55-1.14-4.55-5.09 0-1.13.39-2.06 1.03-2.79-.1-.26-.45-1.31.1-2.73 0 0 .84-.27 2.75 1.06A9.3 9.3 0 0 1 12 6.84c.85 0 1.71.12 2.5.36 1.9-1.33 2.74-1.06 2.74-1.06.56 1.42.21 2.47.11 2.73.64.73 1.03 1.66 1.03 2.79 0 3.96-2.33 4.82-4.56 5.08.36.32.68.95.68 1.92 0 1.39-.01 2.5-.01 2.84 0 .27.18.59.69.49A10.26 10.26 0 0 0 22 12.23C22 6.58 17.52 2 12 2Z" />
+        </svg>
+      </a>
+      <a class="about-icon-link" href="mailto:craig9re5@gmail.com" aria-label="Email Craig">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M3.75 5.5h16.5A1.75 1.75 0 0 1 22 7.25v9.5a1.75 1.75 0 0 1-1.75 1.75H3.75A1.75 1.75 0 0 1 2 16.75v-9.5A1.75 1.75 0 0 1 3.75 5.5Zm0 1.5a.25.25 0 0 0-.25.25v.24l8.16 5.62a.99.99 0 0 0 1.13 0l8.16-5.62v-.24a.25.25 0 0 0-.25-.25H3.75Zm17.25 2.31-7.31 5.04a2.49 2.49 0 0 1-2.82 0L3.56 9.31v7.44c0 .14.11.25.25.25h16.38a.25.25 0 0 0 .25-.25V9.31Z" />
+        </svg>
+      </a>
     </div>
   </div>
 </section>
 
 <section class="about-grid">
   <div class="about-card">
-    <p class="about-eyebrow">What you will find here</p>
-    <h2>Notes that stay practical</h2>
+    <p class="about-eyebrow">この場所について</p>
+    <h2>実践に残るノート</h2>
     <p>
-      Most posts here will start from real work: something built, something debugged, or something learned the hard
-      way and worth writing down once clearly.
+      ここに置く文章は、実際につくったものや直したもの、遠回りしながら学んだことから始まります。
+      あとから読み返しても役に立つ形で、できるだけ明快に残していきます。
     </p>
   </div>
 
   <div class="about-card">
-    <p class="about-eyebrow">Topics</p>
-    <h2>What I plan to share</h2>
-    <ul class="about-facts">
-      <li>Project notes and build logs.</li>
-      <li>Lessons from programming and debugging.</li>
-      <li>Longer reflections when a topic needs more than a quick update.</li>
-    </ul>
+    <p class="about-eyebrow">テーマ</p>
+    <h2>書いていきたい</h2>
+    <p>
+      制作メモやビルドログ、プログラミングやデバッグの途中で拾った気づきを、
+      その場限りで流さずに残していきたいと思っています。
+    </p>
+    <p>
+      それに加えて、短い更新だけでは収まりきらない考えごとや、
+      少し時間を置いて読み返したくなる話も、ゆっくり書いていくつもりです。
+    </p>
   </div>
 
   <div class="about-card">
-    <p class="about-eyebrow">Approach</p>
-    <h2>Simple by design</h2>
+    <p class="about-eyebrow">方針</p>
+    <h2>余白のある設計</h2>
     <p>
-      A personal site works best when the barrier to publishing stays low. The design should support the writing,
-      not compete with it.
+      個人サイトは、更新するハードルが低いほど続いていきます。
+      見た目は文章を支え、主役になりすぎないくらいがちょうどいいと考えています。
     </p>
   </div>
 </section>
