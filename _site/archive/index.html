@@ -67,6 +67,18 @@
     font-feature-settings: "kern" 1, "liga" 1;
   }
 
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
   .page-header {
     background:
       radial-gradient(circle at top left, rgba(255, 255, 255, 0.18), transparent 28%),
@@ -485,6 +497,172 @@
     grid-template-columns: minmax(0, 1.8fr) minmax(260px, 1fr);
   }
 
+  .todo-section-heading {
+    align-items: flex-end;
+    margin-bottom: 1rem;
+  }
+
+  .todo-section-copy {
+    margin: 0;
+    max-width: 22rem;
+    color: var(--muted);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    text-align: right;
+  }
+
+  .todo-card {
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 1.45rem;
+    background:
+      radial-gradient(circle at top right, rgba(240, 195, 106, 0.14), transparent 28%),
+      linear-gradient(180deg, rgba(228, 240, 235, 0.65), rgba(255, 255, 255, 0.96));
+  }
+
+  .todo-form {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.8rem;
+    align-items: center;
+    margin-bottom: 0.8rem;
+  }
+
+  .todo-input-wrap {
+    display: block;
+  }
+
+  .todo-input,
+  .todo-edit-input {
+    width: 100%;
+    min-height: 3rem;
+    padding: 0.78rem 0.95rem;
+    border: 1px solid rgba(24, 50, 51, 0.14);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.92);
+    color: var(--text);
+    font: inherit;
+    line-height: 1.4;
+  }
+
+  .todo-input:focus,
+  .todo-edit-input:focus {
+    outline: 2px solid rgba(31, 107, 99, 0.24);
+    outline-offset: 1px;
+    border-color: rgba(31, 107, 99, 0.38);
+  }
+
+  .todo-submit {
+    min-height: 3rem;
+    padding-inline: 1.15rem;
+  }
+
+  .todo-status {
+    min-height: 1.5rem;
+    margin: 0 0 0.25rem;
+    color: var(--muted);
+    font-size: 0.92rem;
+    line-height: 1.5;
+  }
+
+  .todo-status[data-state="warn"] {
+    color: #875a10;
+  }
+
+  .todo-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .todo-item {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.8rem;
+    align-items: center;
+    padding: 0.95rem 0;
+    border-top: 1px solid rgba(24, 50, 51, 0.08);
+  }
+
+  .todo-item:first-child {
+    border-top: 0;
+  }
+
+  .todo-item.is-complete .todo-text {
+    color: rgba(24, 50, 51, 0.5);
+    text-decoration: line-through;
+  }
+
+  .todo-item.is-editing {
+    grid-template-columns: 1fr;
+  }
+
+  .todo-check {
+    display: flex;
+    gap: 0.8rem;
+    align-items: flex-start;
+    min-width: 0;
+    cursor: pointer;
+  }
+
+  .todo-check input {
+    margin-top: 0.2rem;
+    accent-color: var(--accent);
+  }
+
+  .todo-text {
+    font-size: 1rem;
+    line-height: 1.65;
+    overflow-wrap: anywhere;
+  }
+
+  .todo-actions {
+    display: flex;
+    gap: 0.55rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .todo-action {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--accent);
+    font: inherit;
+    font-size: 0.92rem;
+    font-weight: 700;
+    line-height: 1.4;
+    cursor: pointer;
+  }
+
+  .todo-action:hover,
+  .todo-action:focus-visible {
+    color: var(--accent-deep);
+  }
+
+  .todo-action-danger {
+    color: #9f4c3b;
+  }
+
+  .todo-action-danger:hover,
+  .todo-action-danger:focus-visible {
+    color: #7c2d1b;
+  }
+
+  .todo-edit-form {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.8rem;
+    align-items: center;
+  }
+
+  .todo-empty {
+    margin: 0.35rem 0 0;
+    color: var(--muted);
+    font-size: 0.97rem;
+    line-height: 1.6;
+  }
+
   .simple-links {
     margin: 1rem 0 0;
     padding-left: 1.1rem;
@@ -515,6 +693,113 @@
 
   .archive-local-actions-link {
     width: fit-content;
+  }
+
+  .archive-tag-filter {
+    margin: 0 0 1.15rem;
+    padding: 1rem 1.05rem 1.05rem;
+    border: 1px solid rgba(24, 50, 51, 0.1);
+    border-radius: 18px;
+    background: linear-gradient(180deg, rgba(228, 240, 235, 0.44), rgba(255, 255, 255, 0.98));
+  }
+
+  .archive-tag-filter-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: end;
+    margin-bottom: 0.8rem;
+  }
+
+  .archive-search-field {
+    display: grid;
+    gap: 0.45rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .archive-search-label {
+    color: var(--muted);
+    font-size: 0.88rem;
+    font-weight: 700;
+    line-height: 1.4;
+  }
+
+  .archive-search-field input {
+    box-sizing: border-box;
+    width: 100%;
+    border: 1px solid rgba(24, 50, 51, 0.14);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.94);
+    color: var(--text);
+    padding: 0.82rem 0.95rem;
+    font: inherit;
+  }
+
+  .archive-search-field input:focus {
+    outline: none;
+    border-color: rgba(31, 107, 99, 0.4);
+    box-shadow: 0 0 0 4px rgba(31, 107, 99, 0.1);
+  }
+
+  .archive-tag-filter-title {
+    margin: 0.18rem 0 0;
+    color: var(--accent-deep);
+    font-family: var(--font-display-latin);
+    font-size: clamp(1.35rem, 2vw, 1.75rem);
+    line-height: 1.08;
+  }
+
+  .archive-tag-toggle {
+    flex-shrink: 0;
+  }
+
+  .archive-tag-filter-chips {
+    --archive-tag-row-height: 2.2rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+    overflow: hidden;
+    transition: max-height 160ms ease;
+  }
+
+  .archive-tag-filter-chips.is-expanded {
+    overflow-y: auto;
+    padding-right: 0.2rem;
+  }
+
+  .archive-tag-chip {
+    gap: 0.45rem;
+    cursor: pointer;
+  }
+
+  .archive-tag-chip.is-active {
+    background: var(--accent-deep);
+    color: #ffffff;
+    border-color: rgba(18, 63, 67, 0.8);
+  }
+
+  .archive-tag-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.4rem;
+    padding: 0.12rem 0.32rem;
+    border-radius: 999px;
+    background: rgba(18, 63, 67, 0.08);
+    font-size: 0.74rem;
+    line-height: 1;
+  }
+
+  .archive-tag-chip.is-active .archive-tag-count {
+    background: rgba(255, 255, 255, 0.18);
+  }
+
+  .archive-item[hidden] {
+    display: none;
+  }
+
+  .archive-filter-empty[hidden] {
+    display: none;
   }
 
   .archive-list li {
@@ -602,7 +887,7 @@
 
   .about-grid {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 1rem;
     align-items: stretch;
   }
@@ -827,12 +1112,6 @@
     line-height: 1.6;
   }
 
-  @media (max-width: 1040px) {
-    .about-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-  }
-
   @media (max-width: 700px) {
     .main-content {
       margin-top: -2.2rem;
@@ -851,6 +1130,16 @@
       display: block;
     }
 
+    .todo-section-heading {
+      margin-bottom: 0.9rem;
+    }
+
+    .todo-section-copy {
+      max-width: none;
+      margin-top: 0.55rem;
+      text-align: left;
+    }
+
     .page-header-home {
       padding: 4rem 1rem 5rem;
     }
@@ -865,6 +1154,17 @@
 
     .page-heading-meta {
       gap: 0.45rem;
+    }
+
+    .todo-form,
+    .todo-edit-form,
+    .todo-item {
+      grid-template-columns: 1fr;
+      align-items: stretch;
+    }
+
+    .todo-actions {
+      justify-content: flex-start;
     }
 
     .about-grid {
@@ -936,9 +1236,69 @@
   <a class="button-link archive-local-actions-link" href="http://127.0.0.1:4173/post-composer.html">发新文章</a>
 </div>
 
+<section class="archive-tag-filter" id="archive-tag-filter">
+  <div class="archive-tag-filter-head">
+    <p class="section-label">Filter</p>
+    <button class="action-button ghost archive-tag-toggle" id="archive-tag-toggle" type="button" hidden="">展开标签</button>
+  </div>
+  <label class="archive-search-field" for="archive-search">
+    <input id="archive-search" type="search" placeholder="按标题、摘要或标签搜索" />
+  </label>
+  <div class="archive-tag-filter-chips is-collapsed" id="archive-tag-filter-chips" aria-label="Archive tag filters">
+    <button class="tag-chip archive-tag-chip is-active" type="button" data-filter-tag="__all__" data-count="5">
+      <span>全部</span>
+      <span class="archive-tag-count">5</span>
+    </button>
+    
+    
+    
+    <button class="tag-chip archive-tag-chip" type="button" data-filter-tag="anime" data-count="1">
+      <span>anime</span>
+      <span class="archive-tag-count">1</span>
+    </button>
+    
+    
+    
+    <button class="tag-chip archive-tag-chip" type="button" data-filter-tag="commentary" data-count="2">
+      <span>commentary</span>
+      <span class="archive-tag-count">2</span>
+    </button>
+    
+    
+    
+    <button class="tag-chip archive-tag-chip" type="button" data-filter-tag="daily" data-count="3">
+      <span>daily</span>
+      <span class="archive-tag-count">3</span>
+    </button>
+    
+    
+    
+    <button class="tag-chip archive-tag-chip" type="button" data-filter-tag="food" data-count="1">
+      <span>food</span>
+      <span class="archive-tag-count">1</span>
+    </button>
+    
+  </div>
+</section>
+
 <ul class="archive-list archive-timeline">
   
-  <li class="archive-item">
+  <li class="archive-item" data-post-tags="daily" data-search-text="寿司郎，你做得好啊 焦糖鹅肝返场了 [&quot;daily&quot;]">
+    <span class="archive-date">Mar 19, 2026</span>
+    <div class="archive-entry">
+      <a href="/2026/03/19/post-20260319sushiro/">寿司郎，你做得好啊</a>
+      
+      <div class="tag-row tag-row-compact" aria-label="Post tags">
+        
+        <span class="tag-chip tag-chip-compact">daily</span>
+        
+      </div>
+      
+      <p>焦糖鹅肝返场了</p>
+    </div>
+  </li>
+  
+  <li class="archive-item" data-post-tags="food||daily" data-search-text="寿司郎，你做得好啊 下周一开始返场 10 元焦糖鹅肝，我将每天都排号去吃。 image [&quot;food&quot;, &quot;daily&quot;]">
     <span class="archive-date">Mar 19, 2026</span>
     <div class="archive-entry">
       <a href="/2026/03/19/post-202603190055/">寿司郎，你做得好啊</a>
@@ -955,7 +1315,7 @@
     </div>
   </li>
   
-  <li class="archive-item">
+  <li class="archive-item" data-post-tags="commentary||anime" data-search-text="我又成「非国民」了？ 如何看待“幽默老日”将gbc争议事件后还观看日本动漫的人称为非国民的言论。 [&quot;commentary&quot;, &quot;anime&quot;]">
     <span class="archive-date">Mar 9, 2026</span>
     <div class="archive-entry">
       <a href="/2026/03/09/hikokumin/">我又成「非国民」了？</a>
@@ -972,7 +1332,7 @@
     </div>
   </li>
   
-  <li class="archive-item">
+  <li class="archive-item" data-post-tags="commentary" data-search-text="为什么上海只有百年历史，却很有文化底蕴的感觉？ “底蕴”来自于“历史和现实的有机联系”。 上海是货真价实的百年城邦。而很多所谓的“历史文化名城”，真实的历史并没有其宣称的那么久。大多数“千年名... [&quot;commentary&quot;]">
     <span class="archive-date">Mar 9, 2026</span>
     <div class="archive-entry">
       <a href="/2026/03/09/post-history/">为什么上海只有百年历史，却很有文化底蕴的感觉？</a>
@@ -987,7 +1347,7 @@
     </div>
   </li>
   
-  <li class="archive-item">
+  <li class="archive-item" data-post-tags="daily" data-search-text="我的猪猪堡呢？？ 我爱南苏 [&quot;daily&quot;]">
     <span class="archive-date">Mar 7, 2026</span>
     <div class="archive-entry">
       <a href="/2026/03/07/where-is-my-pork-burger/">我的猪猪堡呢？？</a>
@@ -1003,9 +1363,144 @@
   </li>
   
 </ul>
+<p class="empty-state archive-filter-empty" id="archive-filter-empty" hidden="">这个标签下暂时没有文章。</p>
 
 <script>
   (function () {
+    var tagFilter = document.getElementById("archive-tag-filter");
+    var tagToggle = document.getElementById("archive-tag-toggle");
+    var tagChips = document.getElementById("archive-tag-filter-chips");
+    var searchInput = document.getElementById("archive-search");
+    var archiveItems = Array.prototype.slice.call(document.querySelectorAll(".archive-item"));
+    var emptyState = document.getElementById("archive-filter-empty");
+
+    if (tagFilter && tagChips && archiveItems.length) {
+      var chips = Array.prototype.slice.call(tagChips.querySelectorAll(".archive-tag-chip"));
+      var allChip = chips.find(function (chip) {
+        return chip.getAttribute("data-filter-tag") === "__all__";
+      });
+      var sortedChips = chips
+        .filter(function (chip) {
+          return chip !== allChip;
+        })
+        .sort(function (left, right) {
+          var countDiff = Number(right.getAttribute("data-count")) - Number(left.getAttribute("data-count"));
+          if (countDiff !== 0) {
+            return countDiff;
+          }
+          return left.getAttribute("data-filter-tag").localeCompare(right.getAttribute("data-filter-tag"));
+        });
+
+      tagChips.innerHTML = "";
+      if (allChip) {
+        tagChips.appendChild(allChip);
+      }
+      sortedChips.forEach(function (chip) {
+        tagChips.appendChild(chip);
+      });
+
+      var rowHeight = 0;
+      var chipGap = 8;
+      var currentTag = "__all__";
+      var currentQuery = "";
+
+      function computeTagHeights() {
+        var firstChip = tagChips.querySelector(".archive-tag-chip");
+        if (!firstChip) {
+          return;
+        }
+
+        var styles = window.getComputedStyle(tagChips);
+        chipGap = parseFloat(styles.rowGap || styles.gap || "8") || 8;
+        rowHeight = firstChip.offsetHeight + chipGap;
+        tagChips.style.setProperty("--archive-tag-row-height", Math.max(rowHeight - chipGap, firstChip.offsetHeight) + "px");
+
+        var collapsedHeight = rowHeight;
+        var expandedHeight = rowHeight * 3 - chipGap;
+        var needsToggle = tagChips.scrollHeight > collapsedHeight + 2;
+
+        tagToggle.hidden = !needsToggle;
+        if (!needsToggle) {
+          tagChips.classList.remove("is-collapsed");
+          tagChips.classList.remove("is-expanded");
+          tagChips.style.maxHeight = "";
+          return;
+        }
+
+        if (tagChips.classList.contains("is-expanded")) {
+          tagChips.style.maxHeight = expandedHeight + "px";
+        } else {
+          tagChips.style.maxHeight = collapsedHeight + "px";
+        }
+      }
+
+      function setActiveChip(nextTag) {
+        currentTag = nextTag;
+        Array.prototype.forEach.call(tagChips.querySelectorAll(".archive-tag-chip"), function (chip) {
+          chip.classList.toggle("is-active", chip.getAttribute("data-filter-tag") === nextTag);
+        });
+      }
+
+      function applyFilter(nextTag) {
+        if (typeof nextTag === "string") {
+          currentTag = nextTag;
+        }
+
+        var visibleCount = 0;
+        archiveItems.forEach(function (item) {
+          var rawTags = item.getAttribute("data-post-tags") || "";
+          var tags = rawTags ? rawTags.split("||") : [];
+          var searchText = (item.getAttribute("data-search-text") || "").toLowerCase();
+          var tagMatch = currentTag === "__all__" || tags.indexOf(currentTag) !== -1;
+          var searchMatch = !currentQuery || searchText.indexOf(currentQuery) !== -1;
+          var matches = tagMatch && searchMatch;
+          item.hidden = !matches;
+          if (matches) {
+            visibleCount += 1;
+          }
+        });
+
+        if (emptyState) {
+          emptyState.hidden = visibleCount !== 0;
+        }
+
+        setActiveChip(nextTag);
+      }
+
+      tagChips.addEventListener("click", function (event) {
+        var button = event.target.closest(".archive-tag-chip");
+        if (!button) {
+          return;
+        }
+
+        var nextTag = button.getAttribute("data-filter-tag");
+        if (nextTag === currentTag || nextTag === "__all__") {
+          applyFilter("__all__");
+          return;
+        }
+
+        applyFilter(nextTag);
+      });
+
+      tagToggle.addEventListener("click", function () {
+        var expanded = tagChips.classList.toggle("is-expanded");
+        tagChips.classList.toggle("is-collapsed", !expanded);
+        tagToggle.textContent = expanded ? "收起标签" : "展开标签";
+        computeTagHeights();
+      });
+
+      if (searchInput) {
+        searchInput.addEventListener("input", function () {
+          currentQuery = searchInput.value.trim().toLowerCase();
+          applyFilter(currentTag);
+        });
+      }
+
+      window.addEventListener("resize", computeTagHeights);
+      applyFilter("__all__");
+      computeTagHeights();
+    }
+
     var container = document.getElementById("archive-local-actions");
     if (!container || !window.fetch) {
       return;

@@ -8,56 +8,43 @@
   </head>
   <body>
     <div class="shell">
-      <header class="masthead">
-        <div>
-          <p class="eyebrow">Local Only</p>
-          <h1>本地发帖器</h1>
-          <p class="subhead">
-            这是一个只在你电脑本地运行的 Markdown 发帖器。它支持常用格式按钮、接近成品的实时预览，
-            以及把图片自动复制到 <code>assets/posts/</code> 后再插入正文。
-          </p>
+      <header class="panel masthead">
+        <div class="masthead-inner">
+          <div class="masthead-copy">
+            <p class="eyebrow">Local Composer</p>
+            <h1>本地发帖器</h1>
+          </div>
         </div>
       </header>
 
       <div class="layout">
-        <aside class="panel meta-panel">
-          <div class="panel-inner stack">
-            <section class="status-banner">
-              <div class="status-chip offline" id="connection-chip">未连接项目目录</div>
-              <strong>本地目录授权</strong>
-              <p id="connection-copy">第一次使用时，选择整个项目根目录。之后就能同时保存文章和图片。</p>
-              <div class="action-row">
+        <main class="composer-main">
+          <section class="panel composer-workspace">
+            <div class="status-bar">
+              <div class="status-copy">
+                <div class="status-chip offline" id="connection-chip">未连接项目目录</div>
+                <p id="connection-copy">先选择整个项目根目录，之后就能直接保存文章和图片。</p>
+              </div>
+              <div class="action-row action-row-tight">
                 <button class="action-button secondary" id="pick-project" type="button">选择项目根目录</button>
-                <button class="action-button ghost" id="forget-project" type="button">断开当前目录</button>
+                <button class="action-button ghost" id="forget-project" type="button">断开目录</button>
               </div>
-            </section>
+            </div>
 
-            <section class="library-card stack">
-              <div>
-                <h2 class="section-title">编辑已有贴文</h2>
-                <p class="section-copy">支持最近修改列表和搜索，打开后会回填 front matter 与正文。</p>
-              </div>
-
-              <div class="composer-mode-row">
-                <div class="status-chip" id="composer-mode-chip">新建模式</div>
-                <button class="action-button ghost compact" id="new-post" type="button" hidden>切换到新建</button>
+            <section class="editor-card stack">
+              <div class="section-heading">
+                <div>
+                  <p class="section-kicker">Write</p>
+                  <h2 class="section-title">新建文章</h2>
+                  <p class="section-copy">核心字段保持在首屏，正文编辑和预览同步更新。</p>
+                </div>
+                <div class="composer-mode-row">
+                  <div class="status-chip" id="composer-mode-chip">新建模式</div>
+                  <button class="action-button ghost compact" id="new-post" type="button" hidden>切换到新建</button>
+                </div>
               </div>
 
               <div class="editing-file" id="editing-file" hidden>当前文件：</div>
-
-              <label>
-                <span class="field-label">搜索贴文</span>
-                <input id="post-search" name="post-search" type="text" placeholder="按标题、文件名或标签搜索">
-              </label>
-
-              <div class="post-library-list" id="post-list" aria-live="polite"></div>
-            </section>
-
-            <section class="meta-card stack">
-              <div>
-                <h2 class="section-title">文章信息</h2>
-                <p class="section-copy">常用字段放前面，摘要和 slug 收进高级选项，默认更清爽。</p>
-              </div>
 
               <div class="grid">
                 <label>
@@ -88,7 +75,6 @@
                     <input id="tags-input" name="tags" type="text" placeholder="输入标签后按 Enter 或逗号">
                     <button class="action-button secondary compact" id="add-tag" type="button">添加标签</button>
                   </div>
-                  <span class="field-help">支持多个标签。已存在的标签会在下面显示，点一下即可复用。</span>
                   <div class="tag-chip-list" id="selected-tags" aria-live="polite"></div>
                   <div class="tag-suggestions">
                     <div class="tag-suggestions-title">已有标签</div>
@@ -97,9 +83,9 @@
                 </div>
               </div>
 
-              <details id="advanced-fields">
-                <summary>高级字段</summary>
-                <div class="details-body">
+              <details class="drawer-card" id="advanced-fields">
+                <summary>文章设置</summary>
+                <div class="details-body stack">
                   <label>
                     <span class="field-label">摘要</span>
                     <textarea id="excerpt" name="excerpt" rows="4" placeholder="首页和 Archive 用的摘要。留空时会自动从正文前面截一段。"></textarea>
@@ -113,106 +99,110 @@
                   </label>
                 </div>
               </details>
+
+              <div class="toolbar-shell">
+                <div class="toolbar" aria-label="Markdown toolbar">
+                  <div class="toolbar-group">
+                    <button class="tool-button" data-action="h1" type="button">H1</button>
+                    <button class="tool-button" data-action="h2" type="button">H2</button>
+                    <button class="tool-button" data-action="h3" type="button">H3</button>
+                  </div>
+                  <div class="toolbar-group">
+                    <button class="tool-button" data-action="bold" type="button">粗体</button>
+                    <button class="tool-button" data-action="italic" type="button">斜体</button>
+                    <button class="tool-button" data-action="link" type="button">链接</button>
+                    <button class="tool-button" data-action="inline-code" type="button">行内代码</button>
+                  </div>
+                  <div class="toolbar-group">
+                    <button class="tool-button" data-action="quote" type="button">引用</button>
+                    <button class="tool-button" data-action="ul" type="button">无序列表</button>
+                    <button class="tool-button" data-action="ol" type="button">有序列表</button>
+                    <button class="tool-button" data-action="task" type="button">任务列表</button>
+                  </div>
+                  <div class="toolbar-group">
+                    <button class="tool-button" data-action="code-block" type="button">代码块</button>
+                    <button class="tool-button" data-action="hr" type="button">分隔线</button>
+                    <button class="tool-button" id="insert-local-image" type="button">本地导入图片</button>
+                    <button class="tool-button" id="insert-remote-image" type="button">添加网络图片</button>
+                  </div>
+                </div>
+              </div>
+
+              <input id="image-picker" class="hidden" type="file" accept="image/*" multiple>
+
+              <textarea
+                id="body"
+                class="editor-area"
+                name="body"
+                spellcheck="false"
+                placeholder="这里直接写 Markdown 正文。"
+                required
+              ></textarea>
+
+              <div class="editor-meta">
+                <div id="editor-stats">0 字符 | 0 行</div>
+                <div>最终会生成标准 Jekyll post Markdown 文件</div>
+              </div>
+
+              <div class="action-row">
+                <button class="action-button primary" id="save-post" type="button">保存文章</button>
+                <button class="action-button secondary" id="save-and-new" type="button">保存并继续写下一篇</button>
+                <button class="action-button secondary hidden" id="publish-post" type="button">提交并推送</button>
+                <button class="action-button ghost" id="download-post" type="button">下载 Markdown</button>
+              </div>
+
+              <p id="status" class="status-text">还没有连接项目目录。先点“选择项目根目录”，后面保存文章和插图都会更顺畅。</p>
             </section>
 
-            <section class="helper-card stack">
-              <div>
-                <h2 class="section-title">Markdown 帮助</h2>
-                <p class="section-copy">这个编辑器仍以 Markdown 为唯一真实来源，但常用格式都可以点按钮插入。</p>
+            <details class="drawer-card">
+              <summary>编辑已有贴文</summary>
+              <div class="details-body stack">
+                <p class="section-copy">搜索并打开已有 Markdown，回填 front matter、正文和标签。</p>
+                <label>
+                  <span class="field-label">搜索贴文</span>
+                  <input id="post-search" name="post-search" type="text" placeholder="按标题、文件名或标签搜索">
+                </label>
+                <div class="post-library-list" id="post-list" aria-live="polite"></div>
               </div>
-              <ul class="helper-list">
-                <li><code>**粗体**</code>、<code>*斜体*</code>、<code>`行内代码`</code></li>
-                <li><code># 一级标题</code>、<code>## 二级标题</code>、引用、列表、任务列表</li>
-                <li><code>本地导入图片</code> 会把图片复制到 <code>assets/posts/&lt;slug&gt;/</code> 再插入正文</li>
-                <li><code>添加网络图片</code> 会直接插入 Markdown 外链模板，粘贴图片 URL 即可</li>
-                <li>标签支持复用已有值；输入后按 <code>Enter</code>、逗号，或直接失焦都会加入</li>
-                <li>草稿会自动保存在浏览器本地，下次打开会自动恢复</li>
-                <li>编辑模式会覆盖原 Markdown 文件，并保持原文件名与图片目录稳定</li>
-                <li>保存成功后会出现 <code>提交并推送</code>，只提交当前贴文及其图片目录</li>
-                <li><code>Ctrl + S</code> / <code>Cmd + S</code> 直接保存，<code>Shift</code> + 保存会进入下一篇</li>
-                <li>如果浏览器不支持本地写入，仍然可以下载 Markdown 文件</li>
-              </ul>
-            </section>
-          </div>
-        </aside>
+            </details>
 
-        <main class="panel editor-panel">
-          <div class="stack">
-            <div>
-              <h2 class="section-title">正文编辑</h2>
-              <p class="section-copy">左手写 Markdown，右手看渲染结果。工具栏会帮你快速插入常见格式。</p>
-            </div>
-
-            <div class="toolbar" aria-label="Markdown toolbar">
-              <div class="toolbar-group">
-                <button class="tool-button" data-action="h1" type="button">H1</button>
-                <button class="tool-button" data-action="h2" type="button">H2</button>
-                <button class="tool-button" data-action="h3" type="button">H3</button>
+            <details class="drawer-card helper-drawer">
+              <summary>Markdown 帮助</summary>
+              <div class="details-body">
+                <ul class="helper-list">
+                  <li><code>**粗体**</code>、<code>*斜体*</code>、<code>`行内代码`</code></li>
+                  <li><code># 一级标题</code>、<code>## 二级标题</code>、引用、列表、任务列表</li>
+                  <li><code>本地导入图片</code> 会把图片复制到 <code>assets/posts/&lt;slug&gt;/</code> 再插入正文</li>
+                  <li><code>添加网络图片</code> 会直接插入 Markdown 外链模板，粘贴图片 URL 即可</li>
+                  <li>草稿会自动保存在浏览器本地；保存成功后可只提交当前贴文及其图片目录</li>
+                  <li><code>Ctrl + S</code> / <code>Cmd + S</code> 直接保存，按住 <code>Shift</code> 会进入下一篇</li>
+                </ul>
               </div>
-              <div class="toolbar-group">
-                <button class="tool-button" data-action="bold" type="button">粗体</button>
-                <button class="tool-button" data-action="italic" type="button">斜体</button>
-                <button class="tool-button" data-action="link" type="button">链接</button>
-                <button class="tool-button" data-action="inline-code" type="button">行内代码</button>
-              </div>
-              <div class="toolbar-group">
-                <button class="tool-button" data-action="quote" type="button">引用</button>
-                <button class="tool-button" data-action="ul" type="button">无序列表</button>
-                <button class="tool-button" data-action="ol" type="button">有序列表</button>
-                <button class="tool-button" data-action="task" type="button">任务列表</button>
-              </div>
-              <div class="toolbar-group">
-                <button class="tool-button" data-action="code-block" type="button">代码块</button>
-                <button class="tool-button" data-action="hr" type="button">分隔线</button>
-                <button class="tool-button" id="insert-local-image" type="button">本地导入图片</button>
-                <button class="tool-button" id="insert-remote-image" type="button">添加网络图片</button>
-              </div>
-            </div>
-
-            <input id="image-picker" class="hidden" type="file" accept="image/*" multiple>
-
-            <textarea
-              id="body"
-              class="editor-area"
-              name="body"
-              spellcheck="false"
-              placeholder="这里直接写 Markdown 正文。"
-              required
-            ></textarea>
-
-            <div class="editor-meta">
-              <div id="editor-stats">0 字符 | 0 行</div>
-              <div>最终会生成标准 Jekyll post Markdown 文件</div>
-            </div>
-
-            <div class="action-row">
-              <button class="action-button primary" id="save-post" type="button">保存文章</button>
-              <button class="action-button secondary" id="save-and-new" type="button">保存并继续写下一篇</button>
-              <button class="action-button secondary hidden" id="publish-post" type="button">提交并推送</button>
-              <button class="action-button ghost" id="download-post" type="button">下载 Markdown</button>
-            </div>
-
-            <p id="status" class="status-text">还没有连接项目目录。先点“选择项目根目录”，后面保存文章和插图都会更顺畅。</p>
-          </div>
+            </details>
+          </section>
         </main>
 
         <aside class="panel preview-panel">
-          <div class="panel-inner stack">
-            <section class="preview-card stack">
-              <div class="preview-topline">
-                <div class="preview-file" id="file-name">未生成文件名</div>
-                <div class="preview-meta" id="output-meta">语言与发布时间会显示在这里</div>
-              </div>
+          <div class="preview-panel-inner">
+            <div class="preview-heading">
+              <p class="section-kicker">Preview</p>
+              <h2 class="section-title">实时预览</h2>
+              <p class="section-copy">这里尽量贴近站点真实文章页的排版结果。</p>
+            </div>
 
-              <article class="preview-article">
-                <p class="preview-date" id="preview-date">POST</p>
-                <div class="preview-tags" id="preview-tags"></div>
-                <h1 id="preview-title">在左边输入标题和正文</h1>
-                <div class="preview-body" id="preview-host">
-                  <p class="preview-empty">这里会渲染接近博客文章页的预览，包括标题、段落、列表、代码块和图片。</p>
-                </div>
-              </article>
-            </section>
+            <div class="preview-topline">
+              <div class="preview-file" id="file-name">未生成文件名</div>
+              <div class="preview-meta" id="output-meta">语言与发布时间会显示在这里</div>
+            </div>
+
+            <article class="preview-article">
+              <p class="preview-date" id="preview-date">POST</p>
+              <div class="preview-tags" id="preview-tags"></div>
+              <h1 id="preview-title">在左边输入标题和正文</h1>
+              <div class="preview-body" id="preview-host">
+                <p class="preview-empty">这里会渲染接近博客文章页的预览，包括标题、段落、列表、代码块和图片。</p>
+              </div>
+            </article>
           </div>
         </aside>
       </div>

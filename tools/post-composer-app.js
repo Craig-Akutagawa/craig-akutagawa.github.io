@@ -109,7 +109,7 @@ function formatListDate(post) {
     year: "numeric",
     month: "short",
     day: "numeric"
-  }).format(new Date(post.lastModified));
+  }).format(new Date(post.sortTimestamp || post.lastModified));
 }
 
 function slugFromTitle(title) {
@@ -204,6 +204,30 @@ function assetSlugFromFileName(fileName) {
   const normalized = normalizePostFileName(fileName);
   const match = normalized.match(/^\d{4}-\d{2}-\d{2}-(.+)\.md$/);
   return safeSlug(match ? match[1] : normalized.replace(/\.md$/, ""));
+}
+
+function parseCanonicalTimestamp(rawDate, fileName, lastModified) {
+  const normalizedDate = String(rawDate || "").trim();
+  if (normalizedDate) {
+    const jsDate = normalizedDate
+      .replace(/^(\d{4}-\d{2}-\d{2})\s+(\d{2}:\d{2}:\d{2})(?:\s+([+-]\d{2})(\d{2}))?$/, (_, date, time, hourOffset, minuteOffset) => (
+        date + "T" + time + (hourOffset ? hourOffset + ":" + minuteOffset : "")
+      ));
+    const parsed = Date.parse(jsDate);
+    if (!Number.isNaN(parsed)) {
+      return parsed;
+    }
+  }
+
+  const fileMatch = normalizePostFileName(fileName).match(/^(\d{4})-(\d{2})-(\d{2})-/);
+  if (fileMatch) {
+    const parsed = new Date(Number(fileMatch[1]), Number(fileMatch[2]) - 1, Number(fileMatch[3])).getTime();
+    if (!Number.isNaN(parsed)) {
+      return parsed;
+    }
+  }
+
+  return lastModified;
 }
 
 function parseYamlScalar(value) {
@@ -308,6 +332,7 @@ function parsePostDocument(fileName, source, lastModified) {
     tags: Array.isArray(fields.tags) ? fields.tags : [],
     body: parts.body,
     lastModified,
+    sortTimestamp: parseCanonicalTimestamp(fields.date, fileName, lastModified),
     assetSlug: assetSlugFromFileName(fileName)
   };
 }
@@ -1048,7 +1073,7 @@ async function loadPostsIndex() {
       });
     }
 
-    posts.sort((left, right) => right.lastModified - left.lastModified || left.fileName.localeCompare(right.fileName, "en"));
+    posts.sort((left, right) => right.sortTimestamp - left.sortTimestamp || left.fileName.localeCompare(right.fileName, "en"));
     state.postsIndex = posts;
     state.availableTags = Array.from(tags.values()).sort((left, right) => left.localeCompare(right, "en"));
     renderPostList();

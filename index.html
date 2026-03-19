@@ -4,8 +4,6 @@ title: Home
 lang: en-US
 ---
 
-{% assign featured_post = site.posts.first %}
-
 <section class="home-hero">
   <p class="home-hero-kicker">Personal blog</p>
   <h1 class="home-hero-title">Notes on code, projects, and ideas worth keeping.</h1>
@@ -50,28 +48,28 @@ lang: en-US
   {% endif %}
 </section>
 
-<section class="content-section two-column">
-  <div>
-    <p class="section-label">Direction</p>
-    <h2>What this site is for</h2>
-    <p>
-      The goal is a clean personal site that can hold project notes, technical writing, and small updates without extra
-      overhead.
-    </p>
-    <p>
-      As the blog grows, this starter can expand into categories, a dedicated projects page, or a more custom visual
-      system.
-    </p>
+<section class="content-section todo-section">
+  <div class="section-heading todo-section-heading">
+    <div>
+      <p class="section-label">Local only</p>
+      <h2>TODO</h2>
+    </div>
+    <p class="todo-section-copy">Saved only in this browser on this machine.</p>
   </div>
 
-  <aside class="note-card">
-    <h3>Good first clicks</h3>
-    <ul class="simple-links">
-      {% if featured_post %}
-      <li><a href="{{ featured_post.url | relative_url }}">Read the latest post</a></li>
-      {% endif %}
-      <li><a href="{{ '/about/' | relative_url }}">See the about page</a></li>
-      <li><a href="{{ '/archive/' | relative_url }}">Open the archive</a></li>
-    </ul>
-  </aside>
+  <div id="home-todo-card" class="todo-card" data-storage-key="home-todo-v1">
+    <form class="todo-form" novalidate>
+      <label class="todo-input-wrap" for="home-todo-input">
+        <span class="sr-only">Add a todo item</span>
+        <input id="home-todo-input" class="todo-input" name="todo" type="text" maxlength="180" placeholder="Add a task for this machine">
+      </label>
+      <button class="button-link todo-submit" type="submit">Add</button>
+    </form>
+
+    <p class="todo-status" role="status" aria-live="polite"></p>
+    <ul class="todo-list" aria-label="Local todo list"></ul>
+    <p class="todo-empty">No local tasks yet.</p>
+  </div>
 </section>
+
+<script src="{{ '/assets/js/home-todo.js' | relative_url }}"></script>

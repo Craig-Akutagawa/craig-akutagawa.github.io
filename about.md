@@ -51,15 +51,6 @@ hide_page_heading: true
 
 <section class="about-grid">
   <div class="about-card">
-    <p class="about-eyebrow">この場所について</p>
-    <h2>実践に残るノート</h2>
-    <p>
-      ここに置く文章は、実際につくったものや直したもの、遠回りしながら学んだことから始まります。
-      あとから読み返しても役に立つ形で、できるだけ明快に残していきます。
-    </p>
-  </div>
-
-  <div class="about-card">
     <p class="about-eyebrow">テーマ</p>
     <h2>書いていきたい</h2>
     <p>

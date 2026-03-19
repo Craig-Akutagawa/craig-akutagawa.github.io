@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
+import posixpath
 import re
 import subprocess
 import sys
@@ -9,6 +11,7 @@ from functools import partial
 from http import HTTPStatus
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from urllib.parse import unquote, urlsplit
 
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -112,12 +115,18 @@ class ComposerRequestHandler(SimpleHTTPRequestHandler):
         super().__init__(*args, directory=directory, **kwargs)
 
     def do_GET(self) -> None:
-        if self.path == "/status":
+        request_path = urlsplit(self.path).path
+        if request_path == "/status":
             self.respond_json(
                 HTTPStatus.OK,
                 {"ok": True, "service": "post-composer"},
                 extra_headers={"Access-Control-Allow-Origin": "*"},
             )
+            return
+
+        static_path = self.resolve_static_path(request_path)
+        if static_path:
+            self.serve_static_file(static_path)
             return
 
         super().do_GET()
@@ -165,6 +174,46 @@ class ComposerRequestHandler(SimpleHTTPRequestHandler):
 
     def log_message(self, format: str, *args) -> None:
         sys.stdout.write("%s - - [%s] %s\n" % (self.address_string(), self.log_date_time_string(), format % args))
+
+    def resolve_static_path(self, request_path: str) -> Path | None:
+        normalized = posixpath.normpath(unquote(request_path))
+
+        if normalized in {".", "/"}:
+            normalized = "/post-composer.html"
+
+        if normalized.startswith("/assets/"):
+            return Path(self._resolve_repo_path(REPO_ROOT / normalized.lstrip("/"), REPO_ROOT / "assets"))
+
+        if normalized in {"/post-composer.html", "/post-composer.css", "/post-composer-app.js", "/post-composer-renderer.js"}:
+            return Path(self._resolve_repo_path(TOOLS_DIR / normalized.lstrip("/"), TOOLS_DIR))
+
+        return None
+
+    def serve_static_file(self, target: Path) -> None:
+        if not target.exists() or not target.is_file():
+            self.send_error(HTTPStatus.NOT_FOUND, "File not found")
+            return
+
+        data = target.read_bytes()
+        self.send_response(HTTPStatus.OK)
+        self.send_header("Content-Type", self.guess_type(str(target)))
+        self.send_header("Content-Length", str(len(data)))
+        self.end_headers()
+        self.wfile.write(data)
+
+    @staticmethod
+    def _resolve_repo_path(target: Path, root: Path) -> str:
+        resolved_target = target.resolve()
+        resolved_root = root.resolve()
+        try:
+            common_path = os.path.commonpath([str(resolved_target), str(resolved_root)])
+        except ValueError as error:
+            raise PermissionError("invalid path") from error
+
+        if common_path != str(resolved_root):
+            raise PermissionError("invalid path")
+
+        return str(resolved_target)
 
 
 def main() -> None:
