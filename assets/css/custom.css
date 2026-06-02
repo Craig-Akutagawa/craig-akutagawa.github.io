@@ -1452,6 +1452,16 @@ html[data-theme="dark"] .todo-item:hover {
   margin: 0;
 }
 
+.about-page .about-card .about-eyebrow {
+  font-family: var(--font-ui-mixed) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.12em !important;
+  font-size: 0.76rem !important;
+  font-weight: 700 !important;
+  color: var(--muted) !important;
+  line-height: 1.4 !important;
+}
+
 .page-shell.about-page:lang(ja) .about-eyebrow {
   color: var(--accent-deep);
   font-family: var(--font-display-ja);
