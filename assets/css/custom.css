@@ -1407,37 +1407,37 @@ html[data-theme="dark"] .todo-item:hover {
   margin: 0.55rem 0 0;
   max-width: 38rem;
   color: var(--accent);
-  font-family: var(--font-ui-ja);
+  font-family: var(--font-ui-mixed);
   font-size: 1.05rem;
   font-weight: 700;
   line-height: 1.5;
-  letter-spacing: 0.01em;
+  letter-spacing: -0.01em;
 }
 
 .about-summary {
   margin: 0.75rem 0 1rem;
   max-width: 48rem;
-  font-family: var(--font-ui-ja);
+  font-family: var(--font-ui-mixed);
   line-height: 1.8;
-  letter-spacing: 0.01em;
+  letter-spacing: 0;
 }
 
 .about-card h2 {
   margin: 0.22rem 0 0.7rem;
-  font-family: var(--font-display-ja);
+  font-family: var(--font-display-latin);
   color: var(--accent-deep);
   font-size: clamp(1.58rem, 2.1vw, 2rem);
   line-height: 1.14;
-  letter-spacing: 0;
+  letter-spacing: -0.01em;
   text-wrap: pretty;
 }
 
 .about-page .about-card p,
 .about-page .about-card li,
 .about-page .about-pill-row span {
-  font-family: var(--font-ui-ja);
+  font-family: var(--font-ui-mixed);
   line-height: 1.82;
-  letter-spacing: 0.01em;
+  letter-spacing: 0;
 }
 
 .about-page .about-card .about-name {
