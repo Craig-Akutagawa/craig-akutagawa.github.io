@@ -3,14 +3,14 @@ layout: page
 title: About
 permalink: /about/
 page_class: about-page
-lang: ja
+lang: en-US
 hide_page_heading: true
 ---
 
 <section class="about-profile">
   <div class="about-card about-card-primary about-profile-card">
     <div class="about-profile-header">
-      <p class="about-eyebrow">プロフィール</p>
+      <p class="about-eyebrow">Profile</p>
 
       <div class="about-profile-identity">
         <p class="about-name">芥川クレゴ</p>
@@ -20,7 +20,7 @@ hide_page_heading: true
       </div>
     </div>
 
-    <p class="about-role" lang="ja">ものをつくり、コードを書き、日々の発見を静かに綴っています。</p>
+    <p class="about-role" lang="en">A builder of things, writer of code, and quiet chronicler of daily discoveries.</p>
 
 
 
@@ -41,24 +41,21 @@ hide_page_heading: true
 
 <section class="about-grid">
   <div class="about-card">
-    <p class="about-eyebrow">テーマ</p>
-    <h2>書いていきたい</h2>
+    <p class="about-eyebrow">Theme</p>
+    <h2>Ideation & Expression</h2>
     <p>
-      制作メモやビルドログ、プログラミングやデバッグの途中で拾った気づきを、
-      その場限りで流さずに残していきたいと思っています。
+      I strive to capture build logs, development notes, and fleeting insights gathered while coding and debugging—preserving them before they wash away.
     </p>
     <p>
-      それに加えて、短い更新だけでは収まりきらない考えごとや、
-      少し時間を置いて読み返したくなる話も、ゆっくり書いていくつもりです。
+      Alongside these, I reflect on deeper thoughts that exceed the boundaries of brief updates, writing pieces that invite reflection and stand the test of time.
     </p>
   </div>
 
   <div class="about-card">
-    <p class="about-eyebrow">方針</p>
-    <h2>余白のある設計</h2>
+    <p class="about-eyebrow">Philosophy</p>
+    <h2>Space to Breathe</h2>
     <p>
-      個人サイトは、更新するハードルが低いほど続いていきます。
-      見た目は文章を支え、主役になりすぎないくらいがちょうどいいと考えています。
+      A personal site endures when the friction to write is low. I believe design should serve the writing—sitting quietly in the background rather than competing for the spotlight.
     </p>
   </div>
 </section>
