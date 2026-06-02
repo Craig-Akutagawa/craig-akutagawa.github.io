@@ -296,12 +296,14 @@ html[data-theme="dark"] .about-card {
 
 /* Specific navbar glass enhancement to ensure high visibility and pristine clarity */
 .site-nav::before {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.72) 0%, rgba(255, 255, 255, 0.45) 100%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.38) !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, rgba(255, 255, 255, 0.78) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(40px) saturate(220%) !important;
+  -webkit-backdrop-filter: blur(40px) saturate(220%) !important;
   box-shadow: 
-    inset 0 1.5px 1.5px rgba(255, 255, 255, 0.8),
-    inset 0 10px 20px rgba(255, 255, 255, 0.15),
-    inset 0 -1.5px 1.5px rgba(0, 0, 0, 0.04) !important;
+    0 8px 32px rgba(18, 63, 67, 0.08),
+    inset 0 1.5px 1.5px rgba(255, 255, 255, 0.98),
+    inset 0 -1.5px 1.5px rgba(0, 0, 0, 0.03) !important;
 }
 
 /* Dark mode backplate tweaks */
@@ -324,12 +326,14 @@ html[data-theme="dark"] .about-card::before {
 }
 
 html[data-theme="dark"] .site-nav::before {
-  background: linear-gradient(135deg, rgba(25, 36, 37, 0.85) 0%, rgba(21, 36, 37, 0.7) 100%) !important;
-  border-color: rgba(255, 255, 255, 0.1) !important;
+  background: linear-gradient(180deg, rgba(21, 36, 37, 0.94) 0%, rgba(21, 36, 37, 0.84) 100%) !important;
+  border-color: rgba(255, 255, 255, 0.22) !important;
+  backdrop-filter: blur(40px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(40px) saturate(160%) !important;
   box-shadow: 
-    inset 0 1.5px 1.5px rgba(255, 255, 255, 0.22),
-    inset 0 8px 16px rgba(255, 255, 255, 0.04),
-    inset 0 -1.5px 1.5px rgba(0, 0, 0, 0.5) !important;
+    0 8px 32px rgba(0, 0, 0, 0.35),
+    inset 0 1.5px 1.5px rgba(255, 255, 255, 0.28),
+    inset 0 -1.5px 1.5px rgba(0, 0, 0, 0.45) !important;
 }
 
 /* Dynamic Cursor Spotlight Layer (::after) */
@@ -404,8 +408,8 @@ html[data-theme="dark"] .about-card::after {
   display: flex;
   gap: 0.75rem;
   align-items: center;
-  padding: 0.8rem;
-  margin-bottom: 1.2rem;
+  padding: 0.95rem 1.4rem;
+  margin-bottom: 2.2rem;
   flex-wrap: wrap;
 }
 
@@ -1843,4 +1847,35 @@ html[data-theme="dark"] .site-nav .nav-composer-btn:hover {
   color: #ffffff !important;
   border-color: rgba(255, 255, 255, 0.22) !important;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35) !important;
+}
+
+/* Bulletproof Underline & Focus Ring Eradication for Buttons and Nav Links */
+.button-link,
+.button-link:hover,
+.button-link:focus,
+.button-link:active,
+.button-link:focus-visible,
+.button-link-secondary,
+.button-link-secondary:hover,
+.button-link-secondary:focus,
+.button-link-secondary:active,
+.button-link-secondary:focus-visible,
+.site-nav a,
+.site-nav a:hover,
+.site-nav a:focus,
+.site-nav a:active,
+.site-nav a:focus-visible,
+.site-nav a[aria-current="page"],
+.nav-composer-btn,
+.nav-composer-btn:hover,
+.nav-composer-btn:focus,
+.nav-composer-btn:active,
+.nav-composer-btn:focus-visible {
+  text-decoration: none !important;
+  text-decoration-line: none !important;
+  border-bottom: 0 !important;
+  border-bottom-style: none !important;
+  outline: none !important;
+  outline-style: none !important;
+  -webkit-tap-highlight-color: transparent;
 }
