@@ -27,3 +27,5 @@ exclude:
   - tmp
   - .jekyll-cache
   - _site
+  - README.md
+  - "*.cmd"

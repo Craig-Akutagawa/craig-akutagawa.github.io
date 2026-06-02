@@ -9,9 +9,6 @@ lang: en-US
 hide_page_heading: true
 ---
 
-<div class="archive-local-actions" id="archive-local-actions" hidden>
-  <a class="button-link archive-local-actions-link" href="http://127.0.0.1:4173/post-composer.html">发新文章</a>
-</div>
 
 {% if site.posts.size > 0 %}
 {% assign archive_tags = site.tags | sort %}
@@ -151,9 +148,29 @@ hide_page_heading: true
           var tagMatch = currentTag === "__all__" || tags.indexOf(currentTag) !== -1;
           var searchMatch = !currentQuery || searchText.indexOf(currentQuery) !== -1;
           var matches = tagMatch && searchMatch;
-          item.hidden = !matches;
+          
           if (matches) {
+            if (item.hideTimeout) {
+              clearTimeout(item.hideTimeout);
+              item.hideTimeout = null;
+            }
+            item.hidden = false;
+            requestAnimationFrame(function () {
+              requestAnimationFrame(function () {
+                item.classList.remove("is-filtered-out");
+              });
+            });
             visibleCount += 1;
+          } else {
+            item.classList.add("is-filtered-out");
+            if (!item.hideTimeout) {
+              item.hideTimeout = setTimeout(function () {
+                if (item.classList.contains("is-filtered-out")) {
+                  item.hidden = true;
+                }
+                item.hideTimeout = null;
+              }, 220);
+            }
           }
         });
 
@@ -197,38 +214,5 @@ hide_page_heading: true
       applyFilter("__all__");
       computeTagHeights();
     }
-
-    var container = document.getElementById("archive-local-actions");
-    if (!container || !window.fetch) {
-      return;
-    }
-
-    var controller = typeof AbortController === "function" ? new AbortController() : null;
-    var timeoutId = window.setTimeout(function () {
-      if (controller) {
-        controller.abort();
-      }
-    }, 1200);
-
-    fetch("http://127.0.0.1:4173/status", {
-      method: "GET",
-      cache: "no-store",
-      mode: "cors",
-      signal: controller ? controller.signal : undefined
-    })
-      .then(function (response) {
-        return response.ok ? response.json() : null;
-      })
-      .then(function (payload) {
-        if (payload && payload.ok === true && payload.service === "post-composer") {
-          container.hidden = false;
-        }
-      })
-      .catch(function () {
-        // Keep the local action hidden when the composer is unavailable.
-      })
-      .finally(function () {
-        window.clearTimeout(timeoutId);
-      });
   })();
 </script>

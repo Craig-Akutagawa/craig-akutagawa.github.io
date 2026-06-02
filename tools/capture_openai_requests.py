@@ -1,10 +1,19 @@
 from pathlib import Path
 import json
+import re
 from mitmproxy import http
 
 
 OUT = Path(r"D:\Codes\MyWeb\tmp\openai_requests.jsonl")
+SENSITIVE_HEADER_RE = re.compile(r"(authorization|cookie|api[-_]?key|token|secret|key)", re.IGNORECASE)
 OUT.parent.mkdir(parents=True, exist_ok=True)
+
+
+def redacted_headers(headers: http.Headers) -> dict[str, str]:
+    return {
+        key: "[REDACTED]" if SENSITIVE_HEADER_RE.search(key) else value
+        for key, value in headers.items()
+    }
 
 
 def request(flow: http.HTTPFlow) -> None:
@@ -14,7 +23,7 @@ def request(flow: http.HTTPFlow) -> None:
     entry = {
         "method": flow.request.method,
         "url": flow.request.pretty_url,
-        "headers": dict(flow.request.headers),
+        "headers": redacted_headers(flow.request.headers),
         "text": flow.request.get_text(strict=False),
     }
 

@@ -42,18 +42,25 @@ If you prefer a GUI over writing front matter by hand, run the local-only compos
 powershell -ExecutionPolicy Bypass -File .\tools\start-post-composer.ps1
 ```
 
-Then open the local page in your browser, choose the repository root once, and save directly into `_posts`.
+Then open the local page in your browser and start writing. The local composer service reads and saves articles directly in this repository, so there is no directory-permission step.
 
-For the easiest Windows workflow, just double-click:
+For a writing-only session, double-click:
 
 - `Open Post Composer.cmd`
 - `Close Post Composer.cmd`
+
+For the full local site preview, double-click:
+
+- `Open Local Preview.cmd` starts the blog preview and Post Composer, then opens the home page.
+- Use the `发新文章` button in the home page's `LOCAL ONLY` section to enter the composer.
+- `Close Local Preview.cmd` stops only the services launched by that full-preview shortcut.
 
 Security model:
 
 - The composer lives under `tools/` and is excluded from the published Jekyll site.
 - The local server only listens on `127.0.0.1`, so it is reachable only from this computer.
-- Saving still requires local browser permission to write into the project directory.
+- The server verifies the local host name and an in-memory browser session token before reading, saving, importing, or publishing article data.
+- Write requests are accepted only from the local composer page using JSON requests.
 
 The upgraded composer supports:
 
@@ -61,6 +68,7 @@ The upgraded composer supports:
 - A live rendered preview that is closer to the actual post page
 - Automatic image import into `assets/posts/<post-slug>/`
 - Direct save to `_posts` plus a `Save and start a new draft` flow
+- A publish confirmation that surfaces the branch and existing unpushed commits before committing and pushing
 
 ## GitHub comments
 
@@ -87,4 +95,6 @@ The current implementation maps discussions by post pathname, so changing a post
 
 This repo is set up like a GitHub Pages Jekyll site. The checked-in files are enough for Pages to build the published site once the repository settings are pointed at the correct branch.
 
-There is not a local Jekyll toolchain checked into this repo yet. If local preview becomes part of the regular workflow, the next practical improvement is to add a `Gemfile` and a short setup section for `bundle exec jekyll serve`.
+Local preview uses the checked-in `Gemfile` with `bundle exec jekyll serve`. Generated site output, preview logs, PID/process records, Python caches, and request-capture files belong under ignored local paths and should never be committed.
+
+`tools/capture_openai_requests.py` is a local debugging aid. It redacts sensitive request headers before writing, but captured request bodies can still include private content; keep `tmp/openai_requests.jsonl` local only.

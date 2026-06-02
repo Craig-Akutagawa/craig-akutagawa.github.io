@@ -6,6 +6,23 @@ function escapeHtml(value) {
     .replace(/"/g, "&quot;");
 }
 
+function safePreviewUrl(rawUrl, isImage) {
+  const value = String(rawUrl || "").trim();
+  if (!value || /[\u0000-\u001f]/.test(value) || value.startsWith("//")) {
+    return "";
+  }
+  if (/^https?:/i.test(value)) {
+    return value;
+  }
+  if (!isImage && /^mailto:/i.test(value)) {
+    return value;
+  }
+  if (!/^[a-z][a-z0-9+.-]*:/i.test(value)) {
+    return value;
+  }
+  return "";
+}
+
 function renderInlineMarkdown(text) {
   const tokens = [];
 
@@ -19,12 +36,18 @@ function renderInlineMarkdown(text) {
 
   let value = text;
   value = stash(/`([^`]+)`/g, (_, code) => "<code>" + escapeHtml(code) + "</code>", value);
-  value = stash(/\!\[([^\]]*)\]\(([^)]+)\)/g, (_, alt, src) => (
-    "<img src=\"" + escapeHtml(src) + "\" alt=\"" + escapeHtml(alt) + "\">"
-  ), value);
-  value = stash(/\[([^\]]+)\]\(([^)]+)\)/g, (_, label, href) => (
-    "<a href=\"" + escapeHtml(href) + "\" target=\"_blank\" rel=\"noreferrer\">" + escapeHtml(label) + "</a>"
-  ), value);
+  value = stash(/\!\[([^\]]*)\]\(([^)]+)\)/g, (_, alt, src) => {
+    const safeSrc = safePreviewUrl(src, true);
+    return safeSrc
+      ? "<img src=\"" + escapeHtml(safeSrc) + "\" alt=\"" + escapeHtml(alt) + "\">"
+      : "<span class=\"preview-blocked-url\">[已拦截不安全图片地址]</span>";
+  }, value);
+  value = stash(/\[([^\]]+)\]\(([^)]+)\)/g, (_, label, href) => {
+    const safeHref = safePreviewUrl(href, false);
+    return safeHref
+      ? "<a href=\"" + escapeHtml(safeHref) + "\" target=\"_blank\" rel=\"noreferrer\">" + escapeHtml(label) + "</a>"
+      : "<span class=\"preview-blocked-url\">" + escapeHtml(label) + "</span>";
+  }, value);
   value = escapeHtml(value);
   value = value.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
   value = value.replace(/(^|[^*])\*([^*]+)\*(?!\*)/g, "$1<em>$2</em>");

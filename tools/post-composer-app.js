@@ -1,6 +1,3 @@
-const STORAGE_DB = "post-composer-db";
-const STORAGE_STORE = "handles";
-const STORAGE_KEY = "repo-root";
 const DRAFT_STORAGE_KEY = "post-composer-draft-v2";
 
 const titleInput = document.querySelector("#title");
@@ -30,8 +27,6 @@ const connectionChip = document.querySelector("#connection-chip");
 const connectionCopy = document.querySelector("#connection-copy");
 const selectedTagsEl = document.querySelector("#selected-tags");
 const availableTagsEl = document.querySelector("#available-tags");
-const pickProjectButton = document.querySelector("#pick-project");
-const forgetProjectButton = document.querySelector("#forget-project");
 const saveButton = document.querySelector("#save-post");
 const saveAndNewButton = document.querySelector("#save-and-new");
 const publishButton = document.querySelector("#publish-post");
@@ -43,13 +38,13 @@ const toolbarButtons = document.querySelectorAll("[data-action]");
 const requestedEditFile = normalizePostFileName(new URLSearchParams(window.location.search).get("edit"));
 
 const state = {
-  repoHandle: null,
+  serviceReady: false,
+  repositoryName: "",
+  requestToken: "",
   slugTouched: false,
   selectedTags: [],
   availableTags: [],
   postsIndex: [],
-  supportsFsAccess: typeof window.showDirectoryPicker === "function",
-  dbReady: null,
   uiReady: false,
   mode: "create",
   currentFileName: "",
@@ -126,13 +121,12 @@ function slugFromTitle(title) {
   }
 
   const date = publishInput.value ? new Date(publishInput.value) : new Date();
-  return "post-" + [
-    date.getFullYear(),
-    pad(date.getMonth() + 1),
-    pad(date.getDate()),
+  const timePart = [
     pad(date.getHours()),
     pad(date.getMinutes())
   ].join("");
+  const randomPart = Math.random().toString(36).slice(2, 5).padEnd(3, "0");
+  return timePart + "-" + randomPart;
 }
 
 function safeSlug(value) {
@@ -373,36 +367,51 @@ function collectPendingTags() {
   renderPreview();
 }
 
+function toggleTag(tag) {
+  setPublishAvailability(null);
+  if (hasTag(tag)) {
+    state.selectedTags = state.selectedTags.filter((item) => item.toLowerCase() !== tag.toLowerCase());
+  } else {
+    state.selectedTags.push(tag);
+  }
+  renderTags();
+  renderPreview();
+}
+
 function renderSelectedTags() {
-  if (!state.selectedTags.length) {
-    selectedTagsEl.innerHTML = "<span class=\"tag-empty\">还没有标签</span>";
+  const allTagsSet = new Set([
+    ...state.availableTags,
+    ...state.selectedTags
+  ]);
+  
+  const allTags = Array.from(allTagsSet).sort((a, b) => a.localeCompare(b));
+  
+  if (!allTags.length) {
+    selectedTagsEl.innerHTML = "<span class=\"tag-empty\">还没有任何标签</span>";
     return;
   }
-
-  selectedTagsEl.innerHTML = state.selectedTags.map((tag) => (
-    "<button class=\"tag-pill selected\" type=\"button\" data-remove-tag=\"" + escapeHtml(tag) + "\">" +
-      "<span>" + escapeHtml(tag) + "</span>" +
-      "<span class=\"tag-pill-remove\" aria-hidden=\"true\">×</span>" +
-    "</button>"
-  )).join("");
+  
+  selectedTagsEl.innerHTML = allTags.map((tag) => {
+    const isSelected = hasTag(tag);
+    if (isSelected) {
+      return (
+        "<button class=\"tag-pill selected\" type=\"button\" data-toggle-tag=\"" + escapeHtml(tag) + "\">" +
+          "<span>" + escapeHtml(tag) + "</span>" +
+          "<span class=\"tag-pill-remove\" aria-hidden=\"true\">×</span>" +
+        "</button>"
+      );
+    } else {
+      return (
+        "<button class=\"tag-pill suggestion\" type=\"button\" data-toggle-tag=\"" + escapeHtml(tag) + "\">" +
+          "<span>" + escapeHtml(tag) + "</span>" +
+        "</button>"
+      );
+    }
+  }).join("");
 }
 
 function renderAvailableTags() {
-  const filter = normalizeTag(tagsInput.value).toLowerCase();
-  const available = state.availableTags
-    .filter((tag) => !hasTag(tag))
-    .filter((tag) => !filter || tag.toLowerCase().includes(filter));
-
-  if (!available.length) {
-    availableTagsEl.innerHTML = "<span class=\"tag-empty\">没有可复用的标签</span>";
-    return;
-  }
-
-  availableTagsEl.innerHTML = available.map((tag) => (
-    "<button class=\"tag-pill suggestion\" type=\"button\" data-add-tag=\"" + escapeHtml(tag) + "\">" +
-      escapeHtml(tag) +
-    "</button>"
-  )).join("");
+  // Unified rendering is handled inside renderSelectedTags()
 }
 
 function renderPreviewTags() {
@@ -491,16 +500,16 @@ function setPublishAvailability(context) {
   if (!context) {
     publishButton.classList.add("hidden");
     publishButton.disabled = false;
-    publishButton.textContent = "提交并推送";
+    publishButton.textContent = "发布到网站";
     return;
   }
 
   publishButton.classList.remove("hidden");
   publishButton.disabled = false;
-  publishButton.textContent = "提交并推送";
+  publishButton.textContent = "发布到网站";
 }
 
-function setPublishingState(active) {
+function setPublishingState(active, activeLabel = "正在发布...") {
   state.publishing = active;
 
   if (!publishButton) {
@@ -508,13 +517,21 @@ function setPublishingState(active) {
   }
 
   publishButton.disabled = active || !state.lastSavedContext;
-  publishButton.textContent = active ? "正在推送..." : "提交并推送";
+  publishButton.textContent = active ? activeLabel : "发布到网站";
 }
 
 function setConnectionState(mode, text, detail) {
   connectionChip.textContent = text;
   connectionChip.className = "status-chip" + (mode ? " " + mode : "");
   connectionCopy.textContent = detail;
+}
+
+function disconnectLocalService(message) {
+  state.serviceReady = false;
+  state.requestToken = "";
+  setPublishAvailability(null);
+  setConnectionState("offline", "本地服务未连接", "服务会话已失效，请刷新发帖器页面重新连接。");
+  setStatus(message || "本地服务会话已失效，请刷新页面重新连接。", "error");
 }
 
 function updateEditorStats() {
@@ -784,28 +801,33 @@ function setComposerUrl(fileName) {
 function renderComposerMode() {
   const editing = state.mode === "edit";
   composerModeChip.textContent = editing ? "编辑模式" : "新建模式";
-  newPostButton.hidden = !editing;
-  editingFileEl.hidden = !editing;
-  if (editing) {
-    editingFileEl.textContent = "当前文件：" + state.originalFileName;
+  if (editingFileEl) {
+    editingFileEl.hidden = !editing;
+    if (editing) {
+      editingFileEl.textContent = "当前文件：" + state.originalFileName;
+    }
   }
 
   slugInput.disabled = editing;
   slugHelp.textContent = editing
     ? "编辑模式会保留原文件名与图片目录；slug 仅作为当前文件标识显示。"
     : "建议使用英文、数字和连字符。留空时会自动生成安全 slug。";
-  saveButton.textContent = editing ? "保存修改" : "保存文章";
-  saveAndNewButton.textContent = editing ? "保存并新建文章" : "保存并继续写下一篇";
+  if (saveButton) {
+    saveButton.textContent = editing ? "保存修改" : "保存文章";
+  }
+  if (saveAndNewButton) {
+    saveAndNewButton.textContent = editing ? "保存并新建文章" : "保存并继续写下一篇";
+  }
 }
 
 function renderPostList() {
-  if (!state.repoHandle) {
-    postListEl.innerHTML = "<div class=\"post-library-empty\">连接项目目录后，这里会显示最近修改的贴文。</div>";
+  if (!state.serviceReady) {
+    postListEl.innerHTML = "<div class=\"post-library-empty\">正在连接本地文章库。</div>";
     return;
   }
 
   if (!state.postsIndex.length) {
-    postListEl.innerHTML = "<div class=\"post-library-empty\">当前项目里还没有可编辑的贴文。</div>";
+    postListEl.innerHTML = "<div class=\"post-library-empty\">当前项目里还没有可编辑的文章。</div>";
     return;
   }
 
@@ -825,20 +847,25 @@ function renderPostList() {
   });
 
   if (!filtered.length) {
-    postListEl.innerHTML = "<div class=\"post-library-empty\">没有匹配的贴文。试试标题、文件名或标签。</div>";
+    postListEl.innerHTML = "<div class=\"post-library-empty\">没有匹配的文章。试试标题、文件名或标签。</div>";
     return;
   }
 
   postListEl.innerHTML = filtered.map((post) => (
-    "<button class=\"post-library-item" + (state.mode === "edit" && state.originalFileName === post.fileName ? " active" : "") + "\" type=\"button\" data-open-post=\"" + escapeHtml(post.fileName) + "\">" +
-      "<span class=\"post-library-item-title\">" + escapeHtml(post.title) + "</span>" +
-      "<span class=\"post-library-item-meta\">" + escapeHtml(formatListDate(post)) + " | " + escapeHtml(post.fileName) + "</span>" +
-      (post.tags.length
-        ? "<span class=\"post-library-item-tags\">" + post.tags.map((tag) => (
-          "<span class=\"tag-pill suggestion\">" + escapeHtml(tag) + "</span>"
-        )).join("") + "</span>"
-        : "") +
-    "</button>"
+    "<div class=\"post-library-item-wrapper\">" +
+      "<button class=\"post-library-item" + (state.mode === "edit" && state.originalFileName === post.fileName ? " active" : "") + "\" type=\"button\" data-open-post=\"" + escapeHtml(post.fileName) + "\">" +
+        "<span class=\"post-library-item-title\">" + escapeHtml(post.title) + "</span>" +
+        "<span class=\"post-library-item-meta\">" + escapeHtml(formatListDate(post)) + "</span>" +
+        (post.tags.length
+          ? "<span class=\"post-library-item-tags\">" + post.tags.map((tag) => (
+            "<span class=\"tag-pill suggestion\">" + escapeHtml(tag) + "</span>"
+          )).join("") + "</span>"
+          : "") +
+      "</button>" +
+      "<button class=\"post-library-delete-btn\" type=\"button\" data-delete-post=\"" + escapeHtml(post.fileName) + "\" title=\"删除文章\">" +
+        "<svg viewBox=\"0 0 24 24\" width=\"15\" height=\"15\"><path fill=\"currentColor\" d=\"M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z\"/></svg>" +
+      "</button>" +
+    "</div>"
   )).join("");
 }
 
@@ -849,8 +876,12 @@ function renderPreview() {
   updateEditorStats();
 
   if (!title && !body) {
-    fileNameEl.textContent = state.mode === "edit" && state.originalFileName ? state.originalFileName : "未生成文件名";
-    outputMetaEl.textContent = "语言与发布时间会显示在这里";
+    if (fileNameEl) {
+      fileNameEl.textContent = state.mode === "edit" && state.originalFileName ? state.originalFileName : "未生成文件名";
+    }
+    if (outputMetaEl) {
+      outputMetaEl.textContent = "语言与发布时间会显示在这里";
+    }
     previewDate.textContent = "POST";
     previewTitle.textContent = "在左边输入标题和正文";
     previewHost.innerHTML = "<p class=\"preview-empty\">这里会渲染接近博客文章页的预览，包括标题、段落、列表、代码块和图片。</p>";
@@ -859,8 +890,12 @@ function renderPreview() {
     return;
   }
 
-  fileNameEl.textContent = buildFileName();
-  outputMetaEl.textContent = (state.mode === "edit" ? "模式：编辑 | " : "模式：新建 | ") + "语言：" + langInput.value + " | 标签：" + state.selectedTags.length + " | 摘要：" + (buildExcerpt() || "自动留空");
+  if (fileNameEl) {
+    fileNameEl.textContent = buildFileName();
+  }
+  if (outputMetaEl) {
+    outputMetaEl.textContent = (state.mode === "edit" ? "模式：编辑 | " : "模式：新建 | ") + "语言：" + langInput.value + " | 标签：" + state.selectedTags.length + " | 摘要：" + (buildExcerpt() || "自动留空");
+  }
   previewDate.textContent = formatPreviewDate(publishInput.value, langInput.value);
   previewTitle.textContent = title || "Untitled Post";
   previewHost.innerHTML = body ? renderMarkdown(body) : "<p class=\"preview-empty\">正文为空。</p>";
@@ -898,25 +933,25 @@ function enterCreateMode(options = {}) {
 async function openPostForEditing(fileName, options = {}) {
   const normalizedFileName = normalizePostFileName(fileName);
   if (!normalizedFileName) {
-    setStatus("目标贴文文件名无效。", "error");
+    setStatus("目标文章文件名无效。", "error");
     return false;
   }
 
-  if (!options.skipDirtyCheck && !confirmDiscardChanges("当前编辑区有未保存修改，确定切换到另一篇贴文吗？")) {
+  if (!options.skipDirtyCheck && !confirmDiscardChanges("当前编辑区有未保存修改，确定切换到另一篇文章吗？")) {
     return false;
   }
 
-  if (!state.repoHandle || !await repoHasPostsDirectory(state.repoHandle)) {
+  if (!state.serviceReady) {
     state.pendingEditFile = normalizedFileName;
-    setStatus("连接项目目录后会自动打开 " + normalizedFileName + "。", "warn");
+    setStatus("本地文章库连接完成后会自动打开 " + normalizedFileName + "。", "warn");
     return false;
   }
 
   try {
-    const postsDir = await getPostsDirectory();
-    const fileHandle = await postsDir.getFileHandle(normalizedFileName);
-    const file = await fileHandle.getFile();
-    const parsed = parsePostDocument(normalizedFileName, await file.text(), file.lastModified);
+    const parsed = state.postsIndex.find((post) => post.fileName === normalizedFileName);
+    if (!parsed) {
+      throw new Error("文章不存在");
+    }
     const baseSnapshot = snapshotFromPost(parsed);
     const draftSnapshot = loadDraftByKey(draftKeyFor(normalizedFileName));
 
@@ -935,13 +970,30 @@ async function openPostForEditing(fileName, options = {}) {
     setComposerUrl(normalizedFileName);
     setDirtyBaseline(baseSnapshot);
     bodyInput.focus();
+    let hasPublishableChanges = false;
+    if (!draftSnapshot) {
+      const publishContext = {
+        fileName: normalizedFileName,
+        assetSlug: parsed.assetSlug,
+        mode: "edit"
+      };
+      try {
+        const previewRequest = await postJson("/publish/preview", publishContext);
+        hasPublishableChanges = previewRequest.response.ok && previewRequest.result.status === "ready";
+        setPublishAvailability(hasPublishableChanges ? publishContext : null);
+      } catch (error) {
+        setPublishAvailability(null);
+      }
+    }
     setStatus(draftSnapshot
-      ? "已打开 " + normalizedFileName + "，并恢复了这篇贴文的未保存草稿。"
-      : "已载入 " + normalizedFileName + "，后续保存会覆盖原文件。", "success");
+      ? "已打开 " + normalizedFileName + "，并恢复了这篇文章的未保存草稿。"
+      : hasPublishableChanges
+        ? "已载入 " + normalizedFileName + "，并发现尚未发布的本地改动。"
+        : "已载入 " + normalizedFileName + "，后续保存会覆盖原文件。", hasPublishableChanges ? "warn" : "success");
     return true;
   } catch (error) {
     state.pendingEditFile = "";
-    setStatus("打开贴文失败：" + normalizedFileName + " 不存在，或当前目录不是正确的项目根目录。", "error");
+    setStatus("打开文章失败：" + normalizedFileName + " 不存在，或本地文章库尚未刷新。", "error");
     return false;
   }
 }
@@ -956,248 +1008,99 @@ async function maybeOpenPendingEditFile() {
   await openPostForEditing(target, { skipDirtyCheck: true });
 }
 
-function ensureFsSupport() {
-  if (state.supportsFsAccess) {
-    return true;
-  }
-
-  setStatus("当前浏览器不支持直接写入项目目录，仍然可以用“下载 Markdown”导出文章。建议用 Edge 或 Chrome 打开。", "warn");
-  setConnectionState("offline", "浏览器不支持目录写入", "当前环境无法直接连接项目目录，图片自动导入也会禁用。");
-  return false;
-}
-
-function openHandleDb() {
-  if (!("indexedDB" in window)) {
-    return Promise.resolve(null);
-  }
-
-  if (state.dbReady) {
-    return state.dbReady;
-  }
-
-  state.dbReady = new Promise((resolve, reject) => {
-    const request = indexedDB.open(STORAGE_DB, 1);
-    request.onupgradeneeded = () => {
-      request.result.createObjectStore(STORAGE_STORE);
-    };
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
-  });
-
-  return state.dbReady;
-}
-
-async function persistRepoHandle(handle) {
-  const db = await openHandleDb();
-  if (!db) {
-    return;
-  }
-
-  await new Promise((resolve, reject) => {
-    const tx = db.transaction(STORAGE_STORE, "readwrite");
-    tx.objectStore(STORAGE_STORE).put(handle, STORAGE_KEY);
-    tx.oncomplete = () => resolve();
-    tx.onerror = () => reject(tx.error);
-  });
-}
-
-async function loadPersistedHandle() {
-  const db = await openHandleDb();
-  if (!db) {
-    return null;
-  }
-
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORAGE_STORE, "readonly");
-    const request = tx.objectStore(STORAGE_STORE).get(STORAGE_KEY);
-    request.onsuccess = () => resolve(request.result || null);
-    request.onerror = () => reject(request.error);
-  });
-}
-
-async function clearPersistedHandle() {
-  const db = await openHandleDb();
-  if (!db) {
-    return;
-  }
-
-  await new Promise((resolve, reject) => {
-    const tx = db.transaction(STORAGE_STORE, "readwrite");
-    tx.objectStore(STORAGE_STORE).delete(STORAGE_KEY);
-    tx.oncomplete = () => resolve();
-    tx.onerror = () => reject(tx.error);
-  });
-}
-
-async function repoHasPostsDirectory(handle) {
+async function readJsonResponse(response) {
   try {
-    await handle.getDirectoryHandle("_posts");
-    return true;
+    return await response.json();
   } catch (error) {
-    return false;
+    return { ok: false, message: "本地服务返回了无效响应。" };
   }
 }
 
-async function readTextFile(fileHandle) {
-  const file = await fileHandle.getFile();
-  return file.text();
+async function postJson(path, payload) {
+  const response = await fetch(path, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Post-Composer-Token": state.requestToken
+    },
+    body: JSON.stringify(payload)
+  });
+  const result = await readJsonResponse(response);
+  if (response.status === 403) {
+    disconnectLocalService(result.message || "本地服务会话已失效，请刷新页面重新连接。");
+    throw new Error(result.message || "本地服务会话已失效，请刷新页面重新连接。");
+  }
+  return { response, result };
 }
 
 async function loadPostsIndex() {
-  if (!state.repoHandle || !await repoHasPostsDirectory(state.repoHandle)) {
-    state.postsIndex = [];
-    state.availableTags = [];
-    renderPostList();
-    renderTags();
-    return;
-  }
-
   try {
-    const postsDir = await getPostsDirectory();
-    const posts = [];
-    const tags = new Map();
-
-    for await (const entry of postsDir.values()) {
-      if (entry.kind !== "file" || !entry.name.endsWith(".md")) {
-        continue;
+    const response = await fetch("/api/posts", {
+      headers: {
+        "X-Post-Composer-Token": state.requestToken
       }
-
-      const file = await entry.getFile();
-      const parsed = parsePostDocument(entry.name, await file.text(), file.lastModified);
-      posts.push(parsed);
-      parsed.tags.forEach((tag) => {
-        const key = tag.toLowerCase();
-        if (!tags.has(key)) {
-          tags.set(key, tag);
-        }
-      });
+    });
+    const result = await readJsonResponse(response);
+    if (response.status === 403) {
+      disconnectLocalService(result.message || "本地服务会话已失效，请刷新页面重新连接。");
+      return false;
+    }
+    if (!response.ok || !result.ok) {
+      throw new Error(result.message || "无法读取文章列表。");
     }
 
+    const tags = new Map();
+    const posts = result.posts.map((post) => parsePostDocument(post.fileName, post.source, post.lastModified));
+    posts.forEach((post) => post.tags.forEach((tag) => {
+      const key = tag.toLowerCase();
+      if (!tags.has(key)) {
+        tags.set(key, tag);
+      }
+    }));
     posts.sort((left, right) => right.sortTimestamp - left.sortTimestamp || left.fileName.localeCompare(right.fileName, "en"));
     state.postsIndex = posts;
     state.availableTags = Array.from(tags.values()).sort((left, right) => left.localeCompare(right, "en"));
     renderPostList();
     renderTags();
+    return true;
   } catch (error) {
     state.postsIndex = [];
     state.availableTags = [];
     renderPostList();
     renderTags();
-    setStatus("读取贴文列表失败：" + error.message, "warn");
+    setStatus("读取文章列表失败：" + error.message, "warn");
+    return false;
   }
 }
 
-async function updateConnectionUi() {
-  if (!state.repoHandle) {
-    setConnectionState("offline", "未连接项目目录", "第一次使用时，选择整个项目根目录。之后就能同时保存文章和图片。");
-    state.postsIndex = [];
-    state.availableTags = [];
-    renderPostList();
-    renderTags();
-    return;
-  }
-
-  const hasPosts = await repoHasPostsDirectory(state.repoHandle);
-  if (hasPosts) {
-    setConnectionState("", "项目目录已连接", "已连接到 " + state.repoHandle.name + "，可以写入 _posts 和 assets/posts。");
-    await loadPostsIndex();
-    await maybeOpenPendingEditFile();
-  } else {
-    setConnectionState("warn", "目录不完整", "已选中 " + state.repoHandle.name + "，但里面找不到 _posts，保存时会被阻止。");
-    state.postsIndex = [];
-    state.availableTags = [];
-    renderPostList();
-    renderTags();
-  }
-}
-
-async function restoreProjectHandle() {
-  if (!ensureFsSupport()) {
-    return;
-  }
-
+async function connectLocalRepository() {
   try {
-    const handle = await loadPersistedHandle();
-    if (!handle) {
+    const response = await fetch("/status");
+    const result = await readJsonResponse(response);
+    if (!response.ok || !result.ok) {
+      throw new Error(result.message || "无法连接本地服务。");
+    }
+    if (typeof result.requestToken !== "string" || !result.requestToken) {
+      throw new Error("本地服务未建立安全会话。请重启发帖器。");
+    }
+    state.serviceReady = true;
+    state.repositoryName = result.repositoryName || "当前博客";
+    state.requestToken = result.requestToken;
+    setConnectionState("", "本地仓库已就绪", "已连接到 " + state.repositoryName + "，文章和图片会直接保存到项目中。");
+    if (!await loadPostsIndex()) {
       return;
     }
-
-    const permission = await handle.queryPermission({ mode: "readwrite" });
-    if (permission === "granted" || permission === "prompt") {
-      state.repoHandle = handle;
-      await updateConnectionUi();
-      if (state.mode !== "edit") {
-        setStatus(permission === "granted"
-          ? "已恢复上次连接的项目目录。"
-          : "已找到上次使用的项目目录；保存时可能会再次询问权限。", permission === "granted" ? "success" : "");
-      }
+    await maybeOpenPendingEditFile();
+    if (!requestedEditFile && state.mode !== "edit") {
+      setStatus("", "");
     }
   } catch (error) {
-    setStatus("恢复最近使用目录失败：" + error.message, "warn");
+    state.serviceReady = false;
+    state.requestToken = "";
+    setConnectionState("offline", "本地服务未连接", "请通过 Open Post Composer 启动发帖器后再重试。");
+    renderPostList();
+    setStatus("无法连接本地发帖服务：" + error.message, "error");
   }
-}
-
-async function pickProjectRoot() {
-  if (!ensureFsSupport()) {
-    return;
-  }
-
-  try {
-    const pendingTarget = state.pendingEditFile;
-    const handle = await window.showDirectoryPicker({ mode: "readwrite" });
-    state.repoHandle = handle;
-    await persistRepoHandle(handle);
-    await updateConnectionUi();
-    if (!(pendingTarget && state.mode === "edit")) {
-      setStatus(await repoHasPostsDirectory(handle)
-        ? "已连接到项目目录：" + handle.name + "。后面保存文章和图片会直接写入仓库。"
-        : "已选中目录：" + handle.name + "，但里面没有 _posts。请重新选择博客项目根目录。", await repoHasPostsDirectory(handle) ? "success" : "warn");
-    }
-  } catch (error) {
-    if (error && error.name !== "AbortError") {
-      setStatus("选择项目目录失败：" + error.message, "warn");
-    }
-  }
-}
-
-async function forgetProjectRoot() {
-  state.repoHandle = null;
-  setPublishAvailability(null);
-  await clearPersistedHandle();
-  await updateConnectionUi();
-  setStatus("已断开当前目录连接。之后仍然可以下载 Markdown 文件。", "");
-}
-
-async function ensureRepoPermission() {
-  if (!state.repoHandle) {
-    await pickProjectRoot();
-    if (!state.repoHandle) {
-      return false;
-    }
-  }
-
-  const permission = await state.repoHandle.requestPermission({ mode: "readwrite" });
-  if (permission !== "granted") {
-    setStatus("浏览器没有拿到写入权限，所以目前只能下载 Markdown。", "warn");
-    return false;
-  }
-
-  if (!await repoHasPostsDirectory(state.repoHandle)) {
-    setStatus("当前选中的目录不是博客项目根目录，因为里面找不到 _posts。", "error");
-    return false;
-  }
-
-  return true;
-}
-
-async function getPostsDirectory() {
-  return state.repoHandle.getDirectoryHandle("_posts");
-}
-
-async function getPostAssetsDirectory() {
-  const assetsDir = await state.repoHandle.getDirectoryHandle("assets", { create: true });
-  const postsDir = await assetsDir.getDirectoryHandle("posts", { create: true });
-  return postsDir.getDirectoryHandle(getCurrentSlug(), { create: true });
 }
 
 function safeFileStem(name) {
@@ -1217,33 +1120,13 @@ function sanitizeImageName(fileName) {
   return stem + (extension || ".png");
 }
 
-async function fileExists(directoryHandle, name) {
-  try {
-    await directoryHandle.getFileHandle(name);
-    return true;
-  } catch (error) {
-    return false;
-  }
-}
-
-async function resolveImageFileName(directoryHandle, originalName) {
-  const safeName = sanitizeImageName(originalName);
-  if (!await fileExists(directoryHandle, safeName)) {
-    return safeName;
-  }
-
-  if (window.confirm(safeName + " 已存在。点击“确定”覆盖，点击“取消”自动改名保存。")) {
-    return safeName;
-  }
-
-  const dotIndex = safeName.lastIndexOf(".");
-  const base = dotIndex === -1 ? safeName : safeName.slice(0, dotIndex);
-  const ext = dotIndex === -1 ? "" : safeName.slice(dotIndex);
-  let index = 2;
-  while (await fileExists(directoryHandle, base + "-" + index + ext)) {
-    index += 1;
-  }
-  return base + "-" + index + ext;
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result).split(",", 2)[1] || "");
+    reader.onerror = () => reject(reader.error || new Error("无法读取图片。"));
+    reader.readAsDataURL(file);
+  });
 }
 
 function insertImagesMarkdown(entries) {
@@ -1252,9 +1135,6 @@ function insertImagesMarkdown(entries) {
 }
 
 function handleLocalImageInsert() {
-  if (!ensureFsSupport()) {
-    return;
-  }
   imagePicker.click();
 }
 
@@ -1286,7 +1166,8 @@ async function importImages(files) {
     return;
   }
 
-  if (!await ensureRepoPermission()) {
+  if (!state.serviceReady) {
+    setStatus("本地服务未连接，暂时无法导入图片。", "warn");
     return;
   }
 
@@ -1296,18 +1177,20 @@ async function importImages(files) {
       slugInput.value = getCurrentSlug();
       state.slugTouched = true;
     }
-    const imageDir = await getPostAssetsDirectory();
     const inserted = [];
 
     for (const file of files) {
-      const finalName = await resolveImageFileName(imageDir, file.name);
-      const fileHandle = await imageDir.getFileHandle(finalName, { create: true });
-      const writable = await fileHandle.createWritable();
-      await writable.write(file);
-      await writable.close();
+      const request = await postJson("/api/images/import", {
+        assetSlug: getCurrentSlug(),
+        fileName: sanitizeImageName(file.name),
+        base64: await fileToBase64(file)
+      });
+      if (!request.response.ok || !request.result.ok) {
+        throw new Error(request.result.message || "图片保存失败。");
+      }
       inserted.push({
-        alt: safeFileStem(finalName.replace(/\.[^.]+$/, "")).replace(/-/g, " "),
-        webPath: "/assets/posts/" + getCurrentSlug() + "/" + finalName
+        alt: safeFileStem(request.result.fileName.replace(/\.[^.]+$/, "")).replace(/-/g, " "),
+        webPath: request.result.webPath
       });
     }
 
@@ -1336,26 +1219,38 @@ async function saveToPosts(resetAfterSave) {
   }
 
   if (state.mode === "edit" && !isDirty()) {
-    setStatus("当前贴文没有新的改动。", "");
+    setStatus("当前文章没有新的改动。", "");
     return true;
   }
 
-  if (!await ensureRepoPermission()) {
+  if (!state.serviceReady) {
+    setStatus("本地服务未连接，无法保存文章。", "error");
     return false;
   }
 
   try {
-    const postsDir = await getPostsDirectory();
     const fileName = buildFileName();
+    let saveRequest = await postJson("/api/posts/save", {
+      fileName,
+      markdown: buildMarkdown(),
+      mode: state.mode,
+      overwrite: false
+    });
 
-    if (state.mode === "create" && await fileExists(postsDir, fileName) && !window.confirm(fileName + " 已存在，是否覆盖？")) {
-      return false;
+    if (saveRequest.response.status === 409) {
+      if (!window.confirm(saveRequest.result.message || (fileName + " 已存在，是否覆盖？"))) {
+        return false;
+      }
+      saveRequest = await postJson("/api/posts/save", {
+        fileName,
+        markdown: buildMarkdown(),
+        mode: state.mode,
+        overwrite: true
+      });
     }
-
-    const fileHandle = await postsDir.getFileHandle(fileName, { create: true });
-    const writable = await fileHandle.createWritable();
-    await writable.write(buildMarkdown());
-    await writable.close();
+    if (!saveRequest.response.ok || !saveRequest.result.ok) {
+      throw new Error(saveRequest.result.message || "保存失败。");
+    }
     clearCurrentDraft();
     await loadPostsIndex();
 
@@ -1365,11 +1260,19 @@ async function saveToPosts(resetAfterSave) {
       return true;
     }
 
+    if (state.mode === "create") {
+      state.mode = "edit";
+      state.currentFileName = fileName;
+      state.originalFileName = fileName;
+      state.originalAssetSlug = publishContext.assetSlug;
+      renderComposerMode();
+      setComposerUrl(fileName);
+    }
     setDirtyBaseline(captureEditorSnapshot());
     setPublishAvailability(publishContext);
     renderPostList();
     renderPreview();
-    setStatus(state.mode === "edit"
+    setStatus(publishContext.mode === "edit"
       ? "已保存修改到 " + fileName + "。"
       : "已保存到 " + fileName + "。刷新博客后就能看到新文章。", "success");
     return true;
@@ -1399,7 +1302,26 @@ function downloadMarkdown() {
   anchor.click();
   anchor.remove();
   URL.revokeObjectURL(url);
-  setStatus("已下载 Markdown 文件。没有目录写权限时，你仍然可以用这个方式保存。", "success");
+  setStatus("已下载 Markdown 文件，可作为文章备份或外部编辑副本。", "success");
+}
+
+function publishConfirmationMessage(preview) {
+  const lines = [
+    "即将发布：" + preview.fileName,
+    "分支：" + preview.branch,
+    "",
+    "本次文章相关改动：",
+    ...preview.changes.map((change) => "  " + change)
+  ];
+
+  if (preview.aheadCount > 0) {
+    lines.push("", "注意：当前分支另有 " + preview.aheadCount + " 个尚未推送的提交，推送时也会一并上传。");
+  }
+  if (preview.otherStagedPaths.length) {
+    lines.push("", "已有其他暂存文件（本次提交不会包含）：", ...preview.otherStagedPaths.map((path) => "  " + path));
+  }
+  lines.push("", "确认提交当前文章并推送到远端吗？");
+  return lines.join("\n");
 }
 
 async function publishPost() {
@@ -1407,36 +1329,38 @@ async function publishPost() {
     return;
   }
 
-  setPublishingState(true);
+  setPublishingState(true, "正在检查...");
   try {
-    const response = await fetch("/publish", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(state.lastSavedContext)
-    });
-
-    let result;
-    try {
-      result = await response.json();
-    } catch (error) {
-      result = { ok: false, message: "发布接口返回了无效响应。" };
-    }
-
-    if (!response.ok || !result.ok) {
-      setStatus("提交并推送失败：" + (result.message || "未知错误"), "error");
+    const previewRequest = await postJson("/publish/preview", state.lastSavedContext);
+    const preview = previewRequest.result;
+    if (!previewRequest.response.ok || !preview.ok) {
+      setStatus("发布检查失败：" + (preview.message || "未知错误"), "error");
       return;
     }
+    if (preview.status === "noop") {
+      setStatus(preview.message || "当前文章没有可发布的 Git 改动。", "");
+      return;
+    }
+    setPublishingState(false);
+    if (!window.confirm(publishConfirmationMessage(preview))) {
+      setStatus("已取消发布，文章仍保存在本地。", "");
+      return;
+    }
+    setPublishingState(true, "正在发布...");
+    const publishRequest = await postJson("/publish", state.lastSavedContext);
+    const result = publishRequest.result;
 
+    if (!publishRequest.response.ok || !result.ok) {
+      setStatus(result.message || "发布失败。", result.status === "committed_not_pushed" ? "warn" : "error");
+      return;
+    }
     if (result.status === "noop") {
-      setStatus(result.message || "当前贴文没有可提交的 Git 改动。", "");
+      setStatus(result.message || "当前文章没有可发布的 Git 改动。", "");
       return;
     }
-
-    setStatus((result.message || "已提交并推送当前贴文。") + (result.commitMessage ? " " + result.commitMessage : ""), "success");
+    setStatus((result.message || "已提交并推送当前文章。") + (result.commitMessage ? " " + result.commitMessage : ""), "success");
   } catch (error) {
-    setStatus("提交并推送失败：" + error.message, "error");
+    setStatus("发布失败：" + error.message, "error");
   } finally {
     setPublishingState(false);
   }
@@ -1459,13 +1383,21 @@ toolbarButtons.forEach((button) => {
   button.addEventListener("click", () => handleToolbarAction(button.dataset.action));
 });
 
-pickProjectButton.addEventListener("click", pickProjectRoot);
-forgetProjectButton.addEventListener("click", forgetProjectRoot);
 newPostButton.addEventListener("click", switchToNewPost);
-saveButton.addEventListener("click", () => saveToPosts(false));
-saveAndNewButton.addEventListener("click", () => saveToPosts(true));
-publishButton.addEventListener("click", publishPost);
-downloadButton.addEventListener("click", downloadMarkdown);
+if (saveButton) saveButton.addEventListener("click", () => saveToPosts(false));
+if (saveAndNewButton) saveAndNewButton.addEventListener("click", () => saveToPosts(true));
+if (publishButton) publishButton.addEventListener("click", publishPost);
+if (downloadButton) downloadButton.addEventListener("click", downloadMarkdown);
+
+const savePublishButton = document.querySelector("#save-publish-post");
+if (savePublishButton) {
+  savePublishButton.addEventListener("click", async () => {
+    const saved = await saveToPosts(false);
+    if (saved) {
+      await publishPost();
+    }
+  });
+}
 insertLocalImageButton.addEventListener("click", handleLocalImageInsert);
 insertRemoteImageButton.addEventListener("click", insertRemoteImageTemplate);
 imagePicker.addEventListener("change", (event) => importImages(Array.from(event.target.files || [])));
@@ -1483,22 +1415,57 @@ tagsInput.addEventListener("input", renderTags);
 tagsInput.addEventListener("blur", collectPendingTags);
 
 selectedTagsEl.addEventListener("click", (event) => {
-  const button = event.target.closest("[data-remove-tag]");
+  const button = event.target.closest("[data-toggle-tag]");
   if (!button) {
     return;
   }
-  removeTag(button.dataset.removeTag);
+  toggleTag(button.dataset.toggleTag);
 });
 
-availableTagsEl.addEventListener("click", (event) => {
-  const button = event.target.closest("[data-add-tag]");
-  if (!button) {
+if (availableTagsEl) {
+  availableTagsEl.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-add-tag]");
+    if (!button) {
+      return;
+    }
+    addTag(button.dataset.addTag);
+  });
+}
+
+postListEl.addEventListener("click", async (event) => {
+  const deleteBtn = event.target.closest("[data-delete-post]");
+  if (deleteBtn) {
+    const fileName = deleteBtn.dataset.deletePost;
+    if (confirm("确定要删除文章 \"" + fileName + "\" 吗？此操作无法撤销。")) {
+      try {
+        const response = await fetch("/api/posts/delete", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Post-Composer-Token": state.requestToken
+          },
+          body: JSON.stringify({ fileName })
+        });
+        const result = await response.json();
+        if (result.ok) {
+          alert("成功删除文章 \"" + fileName + "\"");
+          setStatus("", "");
+          if (state.mode === "edit" && state.originalFileName === fileName) {
+            state.dirtyBaseline = JSON.stringify(emptySnapshot());
+            switchToNewPost();
+          }
+          await loadPostsIndex();
+          renderPostList();
+        } else {
+          alert(result.message || "删除文章失败。");
+        }
+      } catch (error) {
+        alert("删除失败：" + error.message);
+      }
+    }
     return;
   }
-  addTag(button.dataset.addTag);
-});
 
-postListEl.addEventListener("click", (event) => {
   const button = event.target.closest("[data-open-post]");
   if (!button) {
     return;
@@ -1556,10 +1523,86 @@ renderTags();
 renderPreview();
 
 if (requestedEditFile) {
-  setStatus("连接项目目录后会自动打开 " + requestedEditFile + "。", "warn");
+  setStatus("正在载入 " + requestedEditFile + "。", "");
 } else if (createDraft) {
   setStatus("已恢复上次未完成的新文章草稿。", "success");
 }
 
-updateConnectionUi();
-restoreProjectHandle();
+connectLocalRepository();
+
+// Theme Toggle Logic
+const themeToggleBtn = document.querySelector("#theme-toggle");
+const themeToggleIcon = document.querySelector("#theme-toggle-icon");
+
+const sunIconPath = "M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41l-1.06-1.06zm1.06-12.37c-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06c.39-.38.39-1.02 0-1.41zm-12.37 12.37c-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06c.39-.38.39-1.02 0-1.41z";
+const moonIconPath = "M12.3 22h-.1c-5.5 0-10-4.5-10-10 0-4.8 3.5-8.9 8.2-9.8.6-.1 1.2.3 1.3.9.1.6-.2 1.2-.8 1.4-2.8 1-4.7 3.5-4.7 6.5 0 3.9 3.1 7 7 7 3 0 5.5-1.9 6.5-4.7.2-.6.8-.9 1.4-.8.6.1 1 .7.9 1.3-.9 4.7-5 8.2-9.7 8.2z";
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute("data-theme", theme);
+  localStorage.setItem("post-composer-theme", theme);
+  if (themeToggleIcon) {
+    themeToggleIcon.innerHTML = `<path d="${theme === "dark" ? sunIconPath : moonIconPath}"/>`;
+  }
+}
+
+function initTheme() {
+  const savedTheme = localStorage.getItem("post-composer-theme");
+  if (savedTheme) {
+    applyTheme(savedTheme);
+  } else if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+    applyTheme("dark");
+  } else {
+    applyTheme("light");
+  }
+}
+
+if (themeToggleBtn) {
+  themeToggleBtn.addEventListener("click", () => {
+    const currentTheme = document.documentElement.getAttribute("data-theme") || "light";
+    applyTheme(currentTheme === "dark" ? "light" : "dark");
+  });
+}
+
+initTheme();
+
+// Liquid Glass Interactive Refraction Hover
+const glassFilter = document.querySelector("#liquid-glass-filter feDisplacementMap");
+if (glassFilter) {
+  document.querySelectorAll(".panel").forEach((panel) => {
+    panel.addEventListener("mousemove", (e) => {
+      const rect = panel.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      
+      // Update glare highlight coordinates relative to the panel
+      panel.style.setProperty("--mouse-x", `${x}px`);
+      panel.style.setProperty("--mouse-y", `${y}px`);
+      
+      // Calculate normalized coordinates from center
+      const cx = x / rect.width - 0.5;
+      const cy = y / rect.height - 0.5;
+      const dist = Math.sqrt(cx * cx + cy * cy);
+      
+      // Adjust scales of individual RGB displacement maps to create an organic fluid ripple feeling with chromatic dispersion
+      const baseScale = 12 + dist * 24;
+      const filterR = document.querySelector("#liquid-glass-filter feDisplacementMap:nth-of-type(1)");
+      const filterG = document.querySelector("#liquid-glass-filter feDisplacementMap:nth-of-type(2)");
+      const filterB = document.querySelector("#liquid-glass-filter feDisplacementMap:nth-of-type(3)");
+      
+      if (filterR) filterR.setAttribute("scale", (baseScale + 4).toFixed(1));
+      if (filterG) filterG.setAttribute("scale", baseScale.toFixed(1));
+      if (filterB) filterB.setAttribute("scale", Math.max(2, baseScale - 4).toFixed(1));
+    });
+    
+    panel.addEventListener("mouseleave", () => {
+      const filterR = document.querySelector("#liquid-glass-filter feDisplacementMap:nth-of-type(1)");
+      const filterG = document.querySelector("#liquid-glass-filter feDisplacementMap:nth-of-type(2)");
+      const filterB = document.querySelector("#liquid-glass-filter feDisplacementMap:nth-of-type(3)");
+      
+      if (filterR) filterR.setAttribute("scale", "22");
+      if (filterG) filterG.setAttribute("scale", "18");
+      if (filterB) filterB.setAttribute("scale", "14");
+    });
+  });
+}
+

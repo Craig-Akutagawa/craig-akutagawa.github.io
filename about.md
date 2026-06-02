@@ -22,17 +22,7 @@ hide_page_heading: true
 
     <p class="about-role" lang="ja">ものをつくり、コードを書き、日々の発見を静かに綴っています。</p>
 
-    <p class="about-summary" lang="ja">
-      この場所は、つくっているものや学んだこと、ふと立ち止まって考えたことを置いておくための小さな拠点です。
-      制作の記録やデバッグの覚え書き、あとで読み返したくなる思考の断片を、落ち着いた形で少しずつ残していきます。
-    </p>
 
-    <div class="about-pill-row">
-      <span>コード</span>
-      <span>プロジェクト</span>
-      <span>実験</span>
-      <span>文章</span>
-    </div>
 
     <div class="about-contact-row" aria-label="Contact links">
       <a class="about-icon-link" href="https://github.com/Craig-Akutagawa" target="_blank" rel="noreferrer" aria-label="GitHub">

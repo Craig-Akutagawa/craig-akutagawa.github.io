@@ -6,6 +6,8 @@ layout: default
 
 {% assign current_lang = page.lang | default: site.lang | default: 'en-US' %}
 
+<div id="reading-progress" class="reading-progress" aria-hidden="true"></div>
+
 <article class="page-shell post-shell" lang="{{ current_lang }}">
     <header class="page-heading page-heading-post">
         <p class="post-date">{{ page.date | date: "%B %-d, %Y" }}</p>
@@ -51,3 +53,22 @@ layout: default
     container.hidden = false;
   })();
 </script>
+
+<script>
+  (function () {
+    var bar = document.getElementById('reading-progress');
+    if (!bar) return;
+    
+    window.addEventListener('scroll', function () {
+      var winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+      var height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      if (height <= 0) {
+        bar.style.width = '0%';
+        return;
+      }
+      var scrolled = (winScroll / height) * 100;
+      bar.style.width = Math.min(scrolled, 100) + '%';
+    });
+  })();
+</script>
+
