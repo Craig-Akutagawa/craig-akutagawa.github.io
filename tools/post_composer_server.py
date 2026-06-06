@@ -284,8 +284,101 @@ def write_local_visibility(hidden_posts: set[str]) -> None:
     LOCAL_VISIBILITY_FILE.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
+def post_has_published_false(target: Path) -> bool:
+    try:
+        source = target.read_text(encoding="utf-8-sig")
+    except OSError:
+        return False
+    return re.search(r"(?m)^published:\s*false\s*$", source) is not None
+
+
+def read_published_hidden_posts() -> set[str]:
+    if not POSTS_DIR.is_dir():
+        return set()
+    return {target.name for target in POSTS_DIR.glob("*.md") if post_has_published_false(target)}
+
+
+def set_post_published_state(target: Path, hidden: bool) -> bool:
+    source = target.read_text(encoding="utf-8-sig")
+    normalized = source.replace("\r\n", "\n")
+    end_index = normalized.find("\n---\n", 4) if normalized.startswith("---\n") else -1
+
+    if end_index == -1:
+        front_matter = ""
+        body = normalized
+    else:
+        front_matter = normalized[4:end_index]
+        body = normalized[end_index + 5 :]
+        if body.startswith("\n"):
+            body = body[1:]
+
+    found = False
+    next_lines = []
+    for line in front_matter.split("\n") if front_matter else []:
+        if re.match(r"^published\s*:", line):
+            found = True
+            if hidden:
+                next_lines.append("published: false")
+            continue
+        next_lines.append(line)
+
+    if hidden and not found:
+        next_lines.append("published: false")
+
+    if next_lines:
+        next_source = "---\n" + "\n".join(next_lines).rstrip() + "\n---\n\n" + body.lstrip("\n")
+    else:
+        next_source = body.lstrip("\n")
+
+    if not next_source.endswith("\n"):
+        next_source += "\n"
+    if next_source == normalized:
+        return False
+
+    target.write_text(next_source, encoding="utf-8", newline="\n")
+    return True
+
+
+def commit_and_push_visibility_change(file_name: str, hidden: bool) -> dict[str, object]:
+    path = f"_posts/{file_name}"
+    add_result = run_git(["add", "--", path], check=False)
+    if add_result.returncode != 0:
+        raise RuntimeError((add_result.stderr or add_result.stdout or "git add failed").strip())
+
+    staged_result = run_git(["diff", "--cached", "--name-only", "--", path], check=False)
+    if staged_result.returncode != 0:
+        raise RuntimeError((staged_result.stderr or staged_result.stdout or "git diff failed").strip())
+    staged_files = [line.strip() for line in staged_result.stdout.splitlines() if line.strip()]
+    if not staged_files:
+        return {"ok": True, "status": "noop", "message": "No published visibility change to commit.", "paths": [path]}
+
+    action = "hide" if hidden else "show"
+    commit_message = f"post: {action} {file_name}"
+    commit_result = run_git(["commit", "--only", "-m", commit_message, "--", path], check=False)
+    if commit_result.returncode != 0:
+        raise RuntimeError((commit_result.stderr or commit_result.stdout or "git commit failed").strip())
+
+    push_result = run_git(["push", "origin", "HEAD"], check=False)
+    if push_result.returncode != 0:
+        return {
+            "ok": False,
+            "status": "committed_not_pushed",
+            "message": "Visibility was committed locally, but git push failed: " + (push_result.stderr or push_result.stdout or "git push failed").strip(),
+            "commitMessage": commit_message,
+            "paths": staged_files,
+        }
+
+    return {
+        "ok": True,
+        "status": "published",
+        "message": "Visibility was committed and pushed.",
+        "commitMessage": commit_message,
+        "paths": staged_files,
+    }
+
+
 def local_visibility_payload() -> dict[str, object]:
-    return {"ok": True, "hiddenPosts": sorted(read_local_visibility())}
+    return {"ok": True, "hiddenPosts": sorted(read_local_visibility() | read_published_hidden_posts())}
 
 
 def update_local_visibility(payload: dict[str, object]) -> dict[str, object]:
@@ -294,15 +387,39 @@ def update_local_visibility(payload: dict[str, object]) -> dict[str, object]:
     if not target.exists() or not target.is_file():
         raise FileNotFoundError(f"未找到文章文件 {file_name}。")
 
-    hidden_posts = read_local_visibility()
-    if bool(payload.get("hidden", False)):
+    hidden = bool(payload.get("hidden", False))
+    changed = set_post_published_state(target, hidden)
+
+    hidden_posts = read_local_visibility() | read_published_hidden_posts()
+    if hidden:
         hidden_posts.add(file_name)
-        hidden = True
     else:
         hidden_posts.discard(file_name)
-        hidden = False
     write_local_visibility(hidden_posts)
-    return {"ok": True, "fileName": file_name, "hidden": hidden, "hiddenPosts": sorted(hidden_posts)}
+
+    publish_result = commit_and_push_visibility_change(file_name, hidden) if changed else {
+        "ok": True,
+        "status": "noop",
+        "message": "Post visibility was already up to date.",
+        "paths": [f"_posts/{file_name}"],
+    }
+    if not publish_result.get("ok"):
+        return {
+            "ok": False,
+            "fileName": file_name,
+            "hidden": hidden,
+            "hiddenPosts": sorted(hidden_posts),
+            "publish": publish_result,
+            "message": publish_result.get("message"),
+        }
+    return {
+        "ok": True,
+        "fileName": file_name,
+        "hidden": hidden,
+        "hiddenPosts": sorted(hidden_posts),
+        "publish": publish_result,
+        "message": publish_result.get("message"),
+    }
 
 
 def save_post(payload: dict[str, object]) -> dict[str, object]:
