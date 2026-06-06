@@ -36,12 +36,14 @@ hide_page_heading: true
   </div>
 </section>
 
-<ul class="archive-list archive-timeline">
+<ul class="archive-list archive-timeline" data-local-post-list="archive">
   {% for post in site.posts %}
-  <li class="archive-item" data-post-tags="{{ post.tags | join: '||' | escape }}" data-search-text="{{ post.title | append: ' ' | append: post.excerpt | append: ' ' | append: post.tags | join: ' ' | strip_html | downcase | escape }}">
+  <li class="archive-item" data-local-post-item data-post-file="{{ post.name | escape }}" data-post-tags="{{ post.tags | join: '||' | escape }}" data-search-text="{{ post.title | append: ' ' | append: post.excerpt | append: ' ' | append: post.tags | join: ' ' | strip_html | downcase | escape }}">
     <span class="archive-date">{{ post.date | date: "%b %-d, %Y" }}</span>
     <div class="archive-entry">
-      <a href="{{ post.url | relative_url }}">{{ post.title }}</a>
+      <div class="archive-entry-head">
+        <a href="{{ post.url | relative_url }}">{{ post.title }}</a>
+      </div>
       {% if post.tags and post.tags.size > 0 %}
       <div class="tag-row tag-row-compact" aria-label="Post tags">
         {% for tag in post.tags %}

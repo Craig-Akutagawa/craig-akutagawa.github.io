@@ -37,6 +37,20 @@ LEGACY_PID_FILE = REPO_ROOT / "tmp" / "post-composer-server.pid"
 DEFAULT_RECORD_FILE = REPO_ROOT / "tmp" / "post-composer-server.json"
 SERVER_LOG_FILE = REPO_ROOT / "tmp" / "post-composer-server.log"
 SERVER_ERR_FILE = REPO_ROOT / "tmp" / "post-composer-server.err.log"
+LOCAL_VISIBILITY_FILE = REPO_ROOT / "tmp" / "local-post-visibility.json"
+
+
+def hidden_subprocess_kwargs() -> dict[str, object]:
+    if os.name != "nt":
+        return {}
+
+    startupinfo = subprocess.STARTUPINFO()
+    startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+    startupinfo.wShowWindow = subprocess.SW_HIDE
+    return {
+        "creationflags": getattr(subprocess, "CREATE_NO_WINDOW", 0),
+        "startupinfo": startupinfo,
+    }
 
 
 def run_git(args: list[str], check: bool = True) -> subprocess.CompletedProcess[str]:
@@ -48,6 +62,7 @@ def run_git(args: list[str], check: bool = True) -> subprocess.CompletedProcess[
         encoding="utf-8",
         errors="replace",
         check=check,
+        **hidden_subprocess_kwargs(),
     )
 
 
@@ -242,6 +257,54 @@ def list_post_documents() -> list[dict[str, object]]:
     return posts
 
 
+def read_local_visibility() -> set[str]:
+    try:
+        data = json.loads(LOCAL_VISIBILITY_FILE.read_text(encoding="utf-8-sig"))
+    except (FileNotFoundError, json.JSONDecodeError, OSError):
+        return set()
+
+    hidden_posts = data.get("hiddenPosts") if isinstance(data, dict) else []
+    if not isinstance(hidden_posts, list):
+        return set()
+
+    valid_posts = set()
+    for item in hidden_posts:
+        if not isinstance(item, str):
+            continue
+        try:
+            valid_posts.add(normalize_post_file_name(item))
+        except ValueError:
+            continue
+    return valid_posts
+
+
+def write_local_visibility(hidden_posts: set[str]) -> None:
+    LOCAL_VISIBILITY_FILE.parent.mkdir(parents=True, exist_ok=True)
+    payload = {"hiddenPosts": sorted(hidden_posts)}
+    LOCAL_VISIBILITY_FILE.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
+def local_visibility_payload() -> dict[str, object]:
+    return {"ok": True, "hiddenPosts": sorted(read_local_visibility())}
+
+
+def update_local_visibility(payload: dict[str, object]) -> dict[str, object]:
+    file_name = normalize_post_file_name(str(payload.get("fileName", "")))
+    target = POSTS_DIR / file_name
+    if not target.exists() or not target.is_file():
+        raise FileNotFoundError(f"未找到文章文件 {file_name}。")
+
+    hidden_posts = read_local_visibility()
+    if bool(payload.get("hidden", False)):
+        hidden_posts.add(file_name)
+        hidden = True
+    else:
+        hidden_posts.discard(file_name)
+        hidden = False
+    write_local_visibility(hidden_posts)
+    return {"ok": True, "fileName": file_name, "hidden": hidden, "hiddenPosts": sorted(hidden_posts)}
+
+
 def save_post(payload: dict[str, object]) -> dict[str, object]:
     file_name = normalize_post_file_name(str(payload.get("fileName", "")))
     markdown = payload.get("markdown")
@@ -275,6 +338,10 @@ def delete_post(payload: dict[str, object]) -> dict[str, object]:
     if not target.exists() or not target.is_file():
         raise FileNotFoundError(f"未找到文章文件 {file_name}。")
     target.unlink()
+    hidden_posts = read_local_visibility()
+    if file_name in hidden_posts:
+        hidden_posts.discard(file_name)
+        write_local_visibility(hidden_posts)
     return {"ok": True, "message": f"成功删除文章 {file_name}。"}
 
 
@@ -447,6 +514,9 @@ class ComposerRequestHandler(SimpleHTTPRequestHandler):
             except Exception as error:  # noqa: BLE001
                 self.respond_json(HTTPStatus.INTERNAL_SERVER_ERROR, {"ok": False, "message": str(error)})
             return
+        if request_path == "/api/local-post-visibility":
+            self.respond_json(HTTPStatus.OK, local_visibility_payload(), extra_headers=self.local_cors_headers())
+            return
 
         static_path = self.resolve_static_path(request_path)
         if static_path:
@@ -467,7 +537,7 @@ class ComposerRequestHandler(SimpleHTTPRequestHandler):
             return
 
         request_path = urlsplit(self.path).path
-        if request_path not in {"/api/posts/save", "/api/posts/delete", "/api/images/import", "/publish/preview", "/publish"}:
+        if request_path not in {"/api/posts/save", "/api/posts/delete", "/api/local-post-visibility", "/api/images/import", "/publish/preview", "/publish"}:
             self.send_error(HTTPStatus.NOT_FOUND, "Not found")
             return
         if not self.has_request_token() or not self.is_same_origin_json_request():
@@ -502,6 +572,9 @@ class ComposerRequestHandler(SimpleHTTPRequestHandler):
             elif request_path == "/api/posts/delete":
                 result = delete_post(payload)
                 status = HTTPStatus.OK
+            elif request_path == "/api/local-post-visibility":
+                result = update_local_visibility(payload)
+                status = HTTPStatus.OK
             elif request_path == "/api/images/import":
                 result = import_image(payload)
                 status = HTTPStatus.OK
@@ -532,6 +605,26 @@ class ComposerRequestHandler(SimpleHTTPRequestHandler):
         origin = self.headers.get("Origin")
         host = self.headers.get("Host", "")
         return origin == f"http://{host}"
+
+    def local_cors_headers(self) -> dict[str, str]:
+        origin = self.headers.get("Origin", "").strip().lower()
+        if re.fullmatch(r"http://(127\.0\.0\.1|localhost):\d+", origin):
+            return {"Access-Control-Allow-Origin": origin, "Vary": "Origin"}
+        return {}
+
+    def static_content_type(self, target: Path) -> str:
+        content_type = self.guess_type(str(target))
+        lower_content_type = content_type.lower()
+        if "charset=" in lower_content_type:
+            return content_type
+        if lower_content_type.startswith("text/") or lower_content_type in {
+            "application/javascript",
+            "application/json",
+            "application/xml",
+            "image/svg+xml",
+        }:
+            return f"{content_type}; charset=utf-8"
+        return content_type
 
     def end_headers(self) -> None:
         self.send_header(
@@ -585,7 +678,7 @@ class ComposerRequestHandler(SimpleHTTPRequestHandler):
 
         data = target.read_bytes()
         self.send_response(HTTPStatus.OK)
-        self.send_header("Content-Type", self.guess_type(str(target)))
+        self.send_header("Content-Type", self.static_content_type(target))
         self.send_header("Content-Length", str(len(data)))
         self.end_headers()
         self.wfile.write(data)

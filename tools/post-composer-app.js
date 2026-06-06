@@ -44,6 +44,7 @@ const state = {
   slugTouched: false,
   selectedTags: [],
   availableTags: [],
+  hiddenPosts: new Set(),
   postsIndex: [],
   uiReady: false,
   mode: "create",
@@ -329,6 +330,10 @@ function parsePostDocument(fileName, source, lastModified) {
     sortTimestamp: parseCanonicalTimestamp(fields.date, fileName, lastModified),
     assetSlug: assetSlugFromFileName(fileName)
   };
+}
+
+function isPostHiddenLocally(fileName) {
+  return state.hiddenPosts.has(normalizePostFileName(fileName));
 }
 
 function hasTag(tag) {
@@ -851,22 +856,29 @@ function renderPostList() {
     return;
   }
 
-  postListEl.innerHTML = filtered.map((post) => (
-    "<div class=\"post-library-item-wrapper\">" +
+  postListEl.innerHTML = filtered.map((post) => {
+    const hiddenLocally = isPostHiddenLocally(post.fileName);
+    return (
+    "<div class=\"post-library-item-wrapper" + (hiddenLocally ? " is-hidden-locally" : "") + "\">" +
       "<button class=\"post-library-item" + (state.mode === "edit" && state.originalFileName === post.fileName ? " active" : "") + "\" type=\"button\" data-open-post=\"" + escapeHtml(post.fileName) + "\">" +
         "<span class=\"post-library-item-title\">" + escapeHtml(post.title) + "</span>" +
         "<span class=\"post-library-item-meta\">" + escapeHtml(formatListDate(post)) + "</span>" +
+        "<span class=\"post-library-local-status" + (hiddenLocally ? " is-hidden" : "") + "\">" + (hiddenLocally ? "Hidden" : "Visible") + "</span>" +
         (post.tags.length
           ? "<span class=\"post-library-item-tags\">" + post.tags.map((tag) => (
             "<span class=\"tag-pill suggestion\">" + escapeHtml(tag) + "</span>"
           )).join("") + "</span>"
           : "") +
       "</button>" +
+      "<button class=\"post-library-visibility-btn\" type=\"button\" data-toggle-post-visibility=\"" + escapeHtml(post.fileName) + "\" data-hidden=\"" + (hiddenLocally ? "true" : "false") + "\" title=\"" + (hiddenLocally ? "恢复本地可见" : "本地隐藏文章") + "\">" +
+        (hiddenLocally ? "Show" : "Hide") +
+      "</button>" +
       "<button class=\"post-library-delete-btn\" type=\"button\" data-delete-post=\"" + escapeHtml(post.fileName) + "\" title=\"删除文章\">" +
         "<svg viewBox=\"0 0 24 24\" width=\"15\" height=\"15\"><path fill=\"currentColor\" d=\"M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z\"/></svg>" +
       "</button>" +
     "</div>"
-  )).join("");
+    );
+  }).join("");
 }
 
 function renderPreview() {
@@ -1073,6 +1085,64 @@ async function loadPostsIndex() {
   }
 }
 
+async function loadLocalVisibility() {
+  if (!state.serviceReady) {
+    state.hiddenPosts = new Set();
+    return false;
+  }
+
+  try {
+    const response = await fetch("/api/local-post-visibility");
+    const result = await readJsonResponse(response);
+    if (!response.ok || !result.ok) {
+      throw new Error(result.message || "无法读取本地隐藏状态。");
+    }
+    state.hiddenPosts = new Set(
+      (Array.isArray(result.hiddenPosts) ? result.hiddenPosts : [])
+        .map((fileName) => normalizePostFileName(fileName))
+        .filter(Boolean)
+    );
+    renderPostList();
+    return true;
+  } catch (error) {
+    state.hiddenPosts = new Set();
+    renderPostList();
+    setStatus("读取本地隐藏状态失败：" + error.message, "warn");
+    return false;
+  }
+}
+
+async function setPostLocalVisibility(fileName, hidden) {
+  if (!state.serviceReady) {
+    setStatus("本地服务未连接，无法更新隐藏状态。", "error");
+    return;
+  }
+
+  const normalizedFileName = normalizePostFileName(fileName);
+  if (!normalizedFileName) {
+    return;
+  }
+
+  try {
+    const request = await postJson("/api/local-post-visibility", {
+      fileName: normalizedFileName,
+      hidden
+    });
+    if (!request.response.ok || !request.result.ok) {
+      throw new Error(request.result.message || "保存本地隐藏状态失败。");
+    }
+    state.hiddenPosts = new Set(
+      (Array.isArray(request.result.hiddenPosts) ? request.result.hiddenPosts : [])
+        .map((nextFileName) => normalizePostFileName(nextFileName))
+        .filter(Boolean)
+    );
+    renderPostList();
+    setStatus(hidden ? "已在本地隐藏 " + normalizedFileName + "。" : "已恢复本地可见 " + normalizedFileName + "。", "success");
+  } catch (error) {
+    setStatus("更新本地隐藏状态失败：" + error.message, "error");
+  }
+}
+
 async function connectLocalRepository() {
   try {
     const response = await fetch("/status");
@@ -1090,6 +1160,7 @@ async function connectLocalRepository() {
     if (!await loadPostsIndex()) {
       return;
     }
+    await loadLocalVisibility();
     await maybeOpenPendingEditFile();
     if (!requestedEditFile && state.mode !== "edit") {
       setStatus("", "");
@@ -1371,12 +1442,12 @@ function switchToNewPost() {
     return;
   }
 
-  const createDraft = loadDraftByKey("create");
+  clearDraftByKey("create");
   enterCreateMode({
-    snapshot: createDraft || emptySnapshot(),
+    snapshot: emptySnapshot(),
     baseline: emptySnapshot()
   });
-  setStatus(createDraft ? "已切换到新建模式，并恢复了未完成的新文章草稿。" : "已切换到新建模式。", createDraft ? "success" : "");
+  setStatus("已切换到新建模式。", "");
 }
 
 toolbarButtons.forEach((button) => {
@@ -1433,6 +1504,12 @@ if (availableTagsEl) {
 }
 
 postListEl.addEventListener("click", async (event) => {
+  const visibilityBtn = event.target.closest("[data-toggle-post-visibility]");
+  if (visibilityBtn) {
+    await setPostLocalVisibility(visibilityBtn.dataset.togglePostVisibility, visibilityBtn.dataset.hidden !== "true");
+    return;
+  }
+
   const deleteBtn = event.target.closest("[data-delete-post]");
   if (deleteBtn) {
     const fileName = deleteBtn.dataset.deletePost;
@@ -1455,6 +1532,7 @@ postListEl.addEventListener("click", async (event) => {
             switchToNewPost();
           }
           await loadPostsIndex();
+          await loadLocalVisibility();
           renderPostList();
         } else {
           alert(result.message || "删除文章失败。");
@@ -1605,4 +1683,3 @@ if (glassFilter) {
     });
   });
 }
-

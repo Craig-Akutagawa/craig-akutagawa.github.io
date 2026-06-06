@@ -1,10 +1,12 @@
-param(
+﻿param(
   [int]$SitePort = 5173,
   [int]$ComposerPort = 4173,
   [switch]$NoOpen
 )
 
 $ErrorActionPreference = "Stop"
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$OutputEncoding = [System.Text.Encoding]::UTF8
 
 try {
   $toolsDir = $PSScriptRoot

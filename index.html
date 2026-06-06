@@ -26,9 +26,9 @@ lang: en-US
   </div>
 
   {% if site.posts and site.posts.size > 0 %}
-  <div class="post-grid">
-    {% for post in site.posts limit: 3 %}
-    <article class="post-card">
+  <div class="post-grid" data-local-post-list="home" data-visible-limit="3">
+    {% for post in site.posts %}
+    <article class="post-card" data-local-post-item data-post-file="{{ post.name | escape }}"{% if forloop.index > 3 %} hidden{% endif %}>
       <p class="post-meta">{{ post.date | date: "%b %-d, %Y" }}</p>
       {% if post.tags and post.tags.size > 0 %}
       <div class="tag-row tag-row-compact" aria-label="Post tags">
@@ -42,6 +42,7 @@ lang: en-US
     </article>
     {% endfor %}
   </div>
+  <p class="empty-state local-post-empty" data-local-post-empty hidden>All posts are hidden on this browser.</p>
   {% else %}
   <p class="empty-state">The archive is empty for now. The first post will show up here automatically.</p>
   {% endif %}
