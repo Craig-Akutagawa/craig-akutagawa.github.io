@@ -577,7 +577,7 @@ html[data-theme="dark"] .tag-chip:hover {
 }
 
 .post-card .tag-row-compact {
-  margin-top: 0.8rem;
+  margin: 0;
 }
 
 .home-hero-copy {
@@ -881,15 +881,29 @@ html[data-theme="dark"] .button-link-secondary:focus {
 .post-card {
   display: flex;
   flex-direction: column;
+  gap: 0.58rem;
+}
+
+.post-card .post-meta {
+  margin: 0;
+  font-size: 0.76rem;
+  line-height: 1.15;
 }
 
 .post-card > p:last-child {
-  margin: 0.85rem 0 0;
+  margin: 0.36rem 0 0;
+}
+
+.post-card h3 {
+  margin: 0;
+}
+
+.note-card h3 {
+  margin: 0.45rem 0 0.55rem;
 }
 
 .post-card h3,
 .note-card h3 {
-  margin: 0.6rem 0 0;
   font-family: var(--font-display-latin);
   color: var(--accent-deep);
   font-size: 1.45rem;
