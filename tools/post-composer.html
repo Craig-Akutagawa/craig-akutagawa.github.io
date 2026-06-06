@@ -32,7 +32,10 @@
             <span class="eyebrow">Library</span>
             <h2>文章库</h2>
             <button class="action-button primary compact" id="new-post" type="button" title="新建文章">
-              <span>+ 新建文章</span>
+              <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true">
+                <path fill="currentColor" d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5z"/>
+              </svg>
+              <span>新建文章</span>
             </button>
           </div>
           <div class="library-search">
@@ -288,36 +291,6 @@
         </aside>
       </div>
     </div>
-
-    <!-- Unified Liquid Glass SVG Filter -->
-    <svg class="hidden" xmlns="http://www.w3.org/2000/svg" style="display: none;">
-      <defs>
-        <filter id="liquid-glass-filter" color-interpolation-filters="sRGB" x="-20%" y="-20%" width="140%" height="140%">
-          <!-- Create high-quality organic fluid noise -->
-          <feTurbulence type="fractalNoise" baseFrequency="0.012" numOctaves="4" result="noise" />
-          
-          <!-- Red channel displacement (higher scale) -->
-          <feDisplacementMap in="SourceGraphic" in2="noise" scale="22" xChannelSelector="R" yChannelSelector="G" result="red_displaced" />
-          <feColorMatrix in="red_displaced" type="matrix" values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" result="red_channel" />
-          
-          <!-- Green channel displacement (middle scale) -->
-          <feDisplacementMap in="SourceGraphic" in2="noise" scale="18" xChannelSelector="R" yChannelSelector="G" result="green_displaced" />
-          <feColorMatrix in="green_displaced" type="matrix" values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0" result="green_channel" />
-          
-          <!-- Blue channel displacement (lower scale) -->
-          <feDisplacementMap in="SourceGraphic" in2="noise" scale="14" xChannelSelector="R" yChannelSelector="G" result="blue_displaced" />
-          <feColorMatrix in="blue_displaced" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0" result="blue_channel" />
-          
-          <!-- Merge RGB channels with screen mode for realistic aberration -->
-          <feBlend in="green_channel" in2="blue_channel" mode="screen" result="gb_combined" />
-          <feBlend in="red_channel" in2="gb_combined" mode="screen" result="rgb_combined" />
-          
-          <!-- Soft blur standard deviation for subpixel color dispersion -->
-          <feGaussianBlur in="rgb_combined" stdDeviation="0.4" result="blurred" />
-          <feBlend in="SourceGraphic" in2="blurred" mode="normal" />
-        </filter>
-      </defs>
-    </svg>
 
     <script src="./post-composer-renderer.js"></script>
     <script src="./post-composer-app.js"></script>

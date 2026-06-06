@@ -7,6 +7,7 @@
   const STORAGE_KEY = root.dataset.storageKey || "home-todo-v1";
   const form = root.querySelector(".todo-form");
   const input = root.querySelector(".todo-input");
+  const dueInput = root.querySelector(".todo-due-input");
   const list = root.querySelector(".todo-list");
   const empty = root.querySelector(".todo-empty");
   const status = root.querySelector(".todo-status");
@@ -46,6 +47,7 @@
         .map((item) => ({
           id: typeof item.id === "string" ? item.id : String(Date.now()),
           text: typeof item.text === "string" ? item.text : "",
+          dueAt: normalizeDue(item.dueAt),
           completed: Boolean(item.completed),
           createdAt: typeof item.createdAt === "number" ? item.createdAt : Date.now(),
           updatedAt: typeof item.updatedAt === "number" ? item.updatedAt : Date.now()
@@ -84,6 +86,60 @@
       .replace(/'/g, "&#39;");
   }
 
+  function normalizeDue(value) {
+    if (typeof value !== "string") {
+      return "";
+    }
+
+    const trimmed = value.trim();
+    if (!trimmed) {
+      return "";
+    }
+
+    return /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(trimmed) ? trimmed : "";
+  }
+
+  function formatDue(value) {
+    const dueAt = normalizeDue(value);
+    if (!dueAt) {
+      return "";
+    }
+
+    const dueDate = new Date(dueAt);
+    if (Number.isNaN(dueDate.getTime())) {
+      return "";
+    }
+
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const dueDay = new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate());
+    const dayDiff = Math.round((dueDay - today) / 86400000);
+    const time = dueDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+
+    if (dayDiff === 0) {
+      return "Today " + time;
+    }
+
+    if (dayDiff === 1) {
+      return "Tomorrow " + time;
+    }
+
+    if (dayDiff === -1) {
+      return "Yesterday " + time;
+    }
+
+    const options = dueDate.getFullYear() === now.getFullYear()
+      ? { month: "short", day: "numeric" }
+      : { year: "numeric", month: "short", day: "numeric" };
+
+    return dueDate.toLocaleDateString([], options) + " " + time;
+  }
+
+  function isOverdue(item) {
+    const dueAt = normalizeDue(item.dueAt);
+    return Boolean(dueAt && !item.completed && new Date(dueAt).getTime() < Date.now());
+  }
+
   function setStatus(message, warn) {
     status.textContent = message || "";
     status.dataset.state = warn ? "warn" : "";
@@ -92,12 +148,24 @@
   function itemMarkup(item) {
     const checked = item.completed ? " checked" : "";
     const completedClass = item.completed ? " is-complete" : "";
+    const dueAt = normalizeDue(item.dueAt);
+    const dueText = formatDue(dueAt);
+    const dueClass = isOverdue(item) ? " is-overdue" : "";
+    const dueChip = dueText
+      ? '<span class="todo-due-chip' + dueClass + '">' + escapeHtml(dueText) + "</span>"
+      : "";
 
     if (editingId === item.id) {
       return [
         '<li class="todo-item is-editing" data-id="', item.id, '">',
         '<form class="todo-edit-form">',
+        '<div class="todo-edit-fields">',
         '<input class="todo-edit-input" name="text" type="text" maxlength="180" value="', escapeHtml(item.text), '" aria-label="Edit todo item">',
+        '<label class="todo-due-field todo-edit-due-field">',
+        '<span class="todo-due-label">Due</span>',
+        '<input class="todo-due-input todo-edit-due-input" name="due" type="datetime-local" value="', escapeHtml(dueAt), '" aria-label="Edit task deadline">',
+        "</label>",
+        "</div>",
         '<div class="todo-actions">',
         '<button type="submit" class="todo-action todo-action-save">Save</button>',
         '<button type="button" class="todo-action" data-action="cancel-edit">Cancel</button>',
@@ -111,7 +179,10 @@
       '<li class="todo-item', completedClass, '" data-id="', item.id, '">',
       '<label class="todo-check">',
       '<input type="checkbox" data-action="toggle"', checked, ' aria-label="Toggle todo item">',
+      '<span class="todo-body">',
       '<span class="todo-text">', escapeHtml(item.text), "</span>",
+      dueChip,
+      "</span>",
       "</label>",
       '<div class="todo-actions">',
       '<button type="button" class="todo-action" data-action="edit">Edit</button>',
@@ -126,25 +197,26 @@
     empty.hidden = items.length > 0;
   }
 
-  function createItem(text) {
+  function createItem(text, dueAt) {
     const now = Date.now();
     return {
       id: "todo-" + now + "-" + Math.random().toString(36).slice(2, 8),
       text: text.trim(),
+      dueAt: normalizeDue(dueAt),
       completed: false,
       createdAt: now,
       updatedAt: now
     };
   }
 
-  function addItem(text) {
+  function addItem(text, dueAt) {
     const trimmed = text.trim();
     if (!trimmed) {
       setStatus("Enter a task before adding it.", true);
       return;
     }
 
-    items.push(createItem(trimmed));
+    items.push(createItem(trimmed, dueAt));
     writeItems();
     render();
     form.reset();
@@ -166,7 +238,7 @@
 
   form.addEventListener("submit", function (event) {
     event.preventDefault();
-    addItem(input.value);
+    addItem(input.value, dueInput ? dueInput.value : "");
   });
 
   list.addEventListener("click", function (event) {
@@ -230,6 +302,7 @@
       return {
         id: item.id,
         text: item.text,
+        dueAt: item.dueAt,
         completed: checkbox.checked,
         createdAt: item.createdAt,
         updatedAt: Date.now()
@@ -248,6 +321,7 @@
 
     const itemEl = editForm.closest(".todo-item");
     const editInput = editForm.querySelector(".todo-edit-input");
+    const editDueInput = editForm.querySelector(".todo-edit-due-input");
     if (!itemEl || !editInput) {
       return;
     }
@@ -265,6 +339,7 @@
       return {
         id: item.id,
         text: nextText,
+        dueAt: editDueInput ? normalizeDue(editDueInput.value) : item.dueAt,
         completed: item.completed,
         createdAt: item.createdAt,
         updatedAt: Date.now()

@@ -863,19 +863,23 @@ function renderPostList() {
       "<button class=\"post-library-item" + (state.mode === "edit" && state.originalFileName === post.fileName ? " active" : "") + "\" type=\"button\" data-open-post=\"" + escapeHtml(post.fileName) + "\">" +
         "<span class=\"post-library-item-title\">" + escapeHtml(post.title) + "</span>" +
         "<span class=\"post-library-item-meta\">" + escapeHtml(formatListDate(post)) + "</span>" +
-        "<span class=\"post-library-local-status" + (hiddenLocally ? " is-hidden" : "") + "\">" + (hiddenLocally ? "Hidden" : "Visible") + "</span>" +
+        "<span class=\"post-library-local-status" + (hiddenLocally ? " is-hidden" : "") + "\">" + (hiddenLocally ? "已隐藏" : "可见") + "</span>" +
         (post.tags.length
           ? "<span class=\"post-library-item-tags\">" + post.tags.map((tag) => (
             "<span class=\"tag-pill suggestion\">" + escapeHtml(tag) + "</span>"
           )).join("") + "</span>"
           : "") +
       "</button>" +
-      "<button class=\"post-library-visibility-btn\" type=\"button\" data-toggle-post-visibility=\"" + escapeHtml(post.fileName) + "\" data-hidden=\"" + (hiddenLocally ? "true" : "false") + "\" title=\"" + (hiddenLocally ? "恢复本地可见" : "本地隐藏文章") + "\">" +
-        (hiddenLocally ? "Show" : "Hide") +
+      "<div class=\"post-library-actions\" role=\"group\" aria-label=\"文章操作\">" +
+      "<button class=\"post-library-visibility-btn\" type=\"button\" data-toggle-post-visibility=\"" + escapeHtml(post.fileName) + "\" data-hidden=\"" + (hiddenLocally ? "true" : "false") + "\" title=\"" + (hiddenLocally ? "恢复本地可见" : "本地隐藏文章") + "\" aria-label=\"" + (hiddenLocally ? "恢复本地可见" : "本地隐藏文章") + "\">" +
+        (hiddenLocally
+          ? "<svg viewBox=\"0 0 24 24\" width=\"15\" height=\"15\" aria-hidden=\"true\"><path fill=\"currentColor\" d=\"M12 5c5 0 9 5.5 9 7s-4 7-9 7-9-5.5-9-7 4-7 9-7zm0 2c-3.5 0-6.5 3.6-7 5 .5 1.4 3.5 5 7 5s6.5-3.6 7-5c-.5-1.4-3.5-5-7-5zm0 2.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5z\"/></svg>"
+          : "<svg viewBox=\"0 0 24 24\" width=\"15\" height=\"15\" aria-hidden=\"true\"><path fill=\"currentColor\" d=\"M2.3 4.7 3.7 3.3l17 17-1.4 1.4-3.1-3.1A10 10 0 0 1 12 19c-5 0-9-5.5-9-7 0-.8 1.1-2.6 2.8-4.2L2.3 4.7zM7.2 9.2C6 10.2 5.2 11.4 5 12c.5 1.4 3.5 5 7 5 .9 0 1.8-.2 2.6-.6l-2-2A2.5 2.5 0 0 1 9.6 11.4L7.2 9.2zM12 5c5 0 9 5.5 9 7 0 .8-.9 2.3-2.4 3.8l-2.1-2.1c.2-.5.4-1.1.4-1.7A4.8 4.8 0 0 0 12 7.1c-.6 0-1.2.1-1.7.3L8.6 5.7c1-.4 2.2-.7 3.4-.7z\"/></svg>") +
       "</button>" +
-      "<button class=\"post-library-delete-btn\" type=\"button\" data-delete-post=\"" + escapeHtml(post.fileName) + "\" title=\"删除文章\">" +
+      "<button class=\"post-library-delete-btn\" type=\"button\" data-delete-post=\"" + escapeHtml(post.fileName) + "\" title=\"删除文章\" aria-label=\"删除文章\">" +
         "<svg viewBox=\"0 0 24 24\" width=\"15\" height=\"15\"><path fill=\"currentColor\" d=\"M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z\"/></svg>" +
       "</button>" +
+      "</div>" +
     "</div>"
     );
   }).join("");
