@@ -576,6 +576,10 @@ html[data-theme="dark"] .tag-chip:hover {
   font-size: 0.77rem;
 }
 
+.post-card .tag-row-compact {
+  margin-top: 0.8rem;
+}
+
 .home-hero-copy {
   margin: 0;
   max-width: 42rem;
@@ -874,9 +878,18 @@ html[data-theme="dark"] .button-link-secondary:focus {
   background: var(--surface-strong);
 }
 
+.post-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.post-card > p:last-child {
+  margin: 0.85rem 0 0;
+}
+
 .post-card h3,
 .note-card h3 {
-  margin: 0.45rem 0 0.55rem;
+  margin: 0.6rem 0 0;
   font-family: var(--font-display-latin);
   color: var(--accent-deep);
   font-size: 1.45rem;
