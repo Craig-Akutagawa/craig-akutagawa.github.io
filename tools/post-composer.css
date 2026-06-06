@@ -103,6 +103,15 @@
     linear-gradient(135deg, #092123 0%, #123f43 48%, #1f6b63 100%);
 }
 
+[data-theme="dark"] .masthead::before {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.018) 42%, transparent 78%);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.24);
+}
+
 [data-theme="dark"] .preview-body code {
   background: rgba(228, 236, 236, 0.08);
   color: #3fa195;
@@ -250,6 +259,17 @@ select {
     radial-gradient(circle at top left, rgba(255, 255, 255, 0.18), transparent 30%),
     radial-gradient(circle at bottom right, rgba(240, 195, 106, 0.16), transparent 24%),
     linear-gradient(135deg, #123f43 0%, #1f6b63 48%, #3f8c7d 100%);
+}
+
+.masthead::before {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.025) 44%, transparent 76%);
+  border-color: rgba(255, 255, 255, 0.18);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    inset 0 -1px 0 rgba(18, 63, 67, 0.12);
 }
 
 .masthead-inner {
