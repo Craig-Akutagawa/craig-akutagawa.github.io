@@ -896,6 +896,9 @@ html[data-theme="dark"] .button-link-secondary:focus {
 
 .post-card h3 {
   margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .note-card h3 {
