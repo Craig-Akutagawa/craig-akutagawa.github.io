@@ -26,25 +26,41 @@
         </div>
       </header>
 
-      <div class="layout">
-        <aside class="panel library-panel">
-          <div class="library-header">
-            <span class="eyebrow">Library</span>
-            <h2>文章库</h2>
-            <button class="action-button primary compact" id="new-post" type="button" title="新建文章">
-              <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true">
-                <path fill="currentColor" d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5z"/>
+      <div class="layout" id="composer-layout">
+        <aside class="panel library-panel" id="library-panel">
+          <div class="library-rail">
+            <button class="library-toggle" id="toggle-library" type="button" aria-expanded="false" aria-controls="library-content" title="展开文章库">
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                <path fill="currentColor" d="M8.7 5.3 10.1 4l8 8-8 8-1.4-1.3 6.7-6.7-6.7-6.7z"/>
               </svg>
-              <span>新建文章</span>
+              <span class="visually-hidden" id="library-toggle-label">展开文章库</span>
             </button>
+            <div class="library-collapsed-summary" aria-hidden="true">
+              <span class="library-rail-label">文库</span>
+              <span class="library-current-meta" id="library-current-meta">新建</span>
+            </div>
           </div>
-          <div class="library-search">
-            <input id="post-search" name="post-search" type="text" placeholder="按标题、文件名或标签搜索">
+
+          <div class="library-content" id="library-content">
+            <div class="library-header">
+              <span class="eyebrow">Library</span>
+              <h2>文章库</h2>
+              <button class="action-button primary compact" id="new-post" type="button" title="新建文章">
+                <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true">
+                  <path fill="currentColor" d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5z"/>
+                </svg>
+                <span>新建文章</span>
+              </button>
+            </div>
+            <div class="library-search">
+              <input id="post-search" name="post-search" type="text" placeholder="按标题、文件名或标签搜索">
+            </div>
+            <div class="post-library-list" id="post-list" aria-live="polite"></div>
           </div>
-          <div class="post-library-list" id="post-list" aria-live="polite"></div>
         </aside>
 
-        <main class="composer-main">
+        <div class="content-split">
+          <main class="composer-main">
           <section class="panel composer-workspace">
             <section class="editor-card stack">
               <div class="section-heading">
@@ -270,25 +286,26 @@
               </div>
             </details>
           </section>
-        </main>
+          </main>
 
-        <aside class="panel preview-panel">
-          <div class="preview-panel-inner">
-            <div class="preview-heading">
-              <p class="section-kicker">Preview</p>
-              <h2 class="section-title">实时预览</h2>
-            </div>
-
-            <article class="preview-article">
-              <p class="preview-date" id="preview-date">POST</p>
-              <div class="preview-tags" id="preview-tags"></div>
-              <h1 id="preview-title">在左边输入标题和正文</h1>
-              <div class="preview-body" id="preview-host">
-                <p class="preview-empty">这里会渲染接近博客文章页的预览，包括标题、段落、列表、代码块和图片。</p>
+          <aside class="panel preview-panel">
+            <div class="preview-panel-inner">
+              <div class="preview-heading">
+                <p class="section-kicker">Preview</p>
+                <h2 class="section-title">实时预览</h2>
               </div>
-            </article>
-          </div>
-        </aside>
+
+              <article class="preview-article">
+                <p class="preview-date" id="preview-date">POST</p>
+                <h1 id="preview-title">在左边输入标题和正文</h1>
+                <div class="preview-tags" id="preview-tags"></div>
+                <div class="preview-body" id="preview-host">
+                  <p class="preview-empty">这里会渲染接近博客文章页的预览，包括标题、段落、列表、代码块和图片。</p>
+                </div>
+              </article>
+            </div>
+          </aside>
+        </div>
       </div>
     </div>
 

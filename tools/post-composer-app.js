@@ -1,4 +1,5 @@
 const DRAFT_STORAGE_KEY = "post-composer-draft-v2";
+const LIBRARY_EXPANDED_STORAGE_KEY = "post-composer-library-expanded";
 
 const titleInput = document.querySelector("#title");
 const langInput = document.querySelector("#lang");
@@ -11,6 +12,10 @@ const addTagButton = document.querySelector("#add-tag");
 const postSearchInput = document.querySelector("#post-search");
 const postListEl = document.querySelector("#post-list");
 const newPostButton = document.querySelector("#new-post");
+const composerLayout = document.querySelector("#composer-layout");
+const toggleLibraryButton = document.querySelector("#toggle-library");
+const libraryToggleLabel = document.querySelector("#library-toggle-label");
+const libraryCurrentMeta = document.querySelector("#library-current-meta");
 const composerModeChip = document.querySelector("#composer-mode-chip");
 const editingFileEl = document.querySelector("#editing-file");
 const bodyInput = document.querySelector("#body");
@@ -47,6 +52,7 @@ const state = {
   hiddenPosts: new Set(),
   postsIndex: [],
   uiReady: false,
+  libraryExpanded: false,
   mode: "create",
   currentFileName: "",
   originalFileName: "",
@@ -803,6 +809,50 @@ function setComposerUrl(fileName) {
   window.history.replaceState({}, "", url.toString());
 }
 
+function setLibraryExpanded(expanded, options = {}) {
+  state.libraryExpanded = Boolean(expanded);
+
+  if (composerLayout) {
+    composerLayout.classList.toggle("library-expanded", state.libraryExpanded);
+  }
+
+  if (toggleLibraryButton) {
+    const label = state.libraryExpanded ? "折叠文章库" : "展开文章库";
+    toggleLibraryButton.setAttribute("aria-expanded", state.libraryExpanded ? "true" : "false");
+    toggleLibraryButton.setAttribute("title", label);
+    toggleLibraryButton.setAttribute("aria-label", label);
+    if (libraryToggleLabel) {
+      libraryToggleLabel.textContent = label;
+    }
+  }
+
+  if (options.persist) {
+    localStorage.setItem(LIBRARY_EXPANDED_STORAGE_KEY, state.libraryExpanded ? "true" : "false");
+  }
+
+  if (state.libraryExpanded && postSearchInput && options.focusSearch) {
+    postSearchInput.focus();
+  }
+}
+
+function updateLibraryCollapsedSummary() {
+  if (!libraryCurrentMeta) {
+    return;
+  }
+
+  if (state.mode === "edit" && state.originalFileName) {
+    libraryCurrentMeta.textContent = "编辑";
+    return;
+  }
+
+  libraryCurrentMeta.textContent = "新建";
+}
+
+function initializeLibraryState() {
+  setLibraryExpanded(localStorage.getItem(LIBRARY_EXPANDED_STORAGE_KEY) === "true");
+  updateLibraryCollapsedSummary();
+}
+
 function renderComposerMode() {
   const editing = state.mode === "edit";
   composerModeChip.textContent = editing ? "编辑模式" : "新建模式";
@@ -890,6 +940,7 @@ function renderPreview() {
   const body = bodyInput.value.trim();
   syncSlugFromTitle();
   updateEditorStats();
+  updateLibraryCollapsedSummary();
 
   if (!title && !body) {
     if (fileNameEl) {
@@ -1006,6 +1057,7 @@ async function openPostForEditing(fileName, options = {}) {
       : hasPublishableChanges
         ? "已载入 " + normalizedFileName + "，并发现尚未发布的本地改动。"
         : "已载入 " + normalizedFileName + "，后续保存会覆盖原文件。", hasPublishableChanges ? "warn" : "success");
+    setLibraryExpanded(false, { persist: true });
     return true;
   } catch (error) {
     state.pendingEditFile = "";
@@ -1453,7 +1505,14 @@ function switchToNewPost() {
     snapshot: emptySnapshot(),
     baseline: emptySnapshot()
   });
+  setLibraryExpanded(false, { persist: true });
   setStatus("已切换到新建模式。", "");
+}
+
+if (toggleLibraryButton) {
+  toggleLibraryButton.addEventListener("click", () => {
+    setLibraryExpanded(!state.libraryExpanded, { persist: true, focusSearch: !state.libraryExpanded });
+  });
 }
 
 toolbarButtons.forEach((button) => {
@@ -1600,6 +1659,7 @@ enterCreateMode({
   baseline: emptySnapshot(),
   focus: false
 });
+initializeLibraryState();
 state.uiReady = true;
 setPublishAvailability(null);
 renderPostList();
