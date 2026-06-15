@@ -894,17 +894,6 @@ html[data-theme="dark"] .button-link-secondary:focus {
   margin: 0.36rem 0 0;
 }
 
-.post-card h3 {
-  margin: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.note-card h3 {
-  margin: 0.45rem 0 0.55rem;
-}
-
 .post-card h3,
 .note-card h3 {
   font-family: var(--font-display-latin);
@@ -913,6 +902,18 @@ html[data-theme="dark"] .button-link-secondary:focus {
   line-height: 1.1;
   letter-spacing: -0.02em;
   text-wrap: pretty;
+}
+
+.note-card h3 {
+  margin: 0.45rem 0 0.55rem;
+}
+
+.post-card h3 {
+  margin: 0;
+  white-space: nowrap;
+  text-wrap: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .archive-tag-toggle {
