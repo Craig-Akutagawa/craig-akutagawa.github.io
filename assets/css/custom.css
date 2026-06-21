@@ -2211,7 +2211,12 @@ pre code {
   }
 
   .archive-date {
-    margin-bottom: 0.35rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+    margin-bottom: 0.5rem;
   }
 
   .archive-timeline {
@@ -2223,7 +2228,7 @@ pre code {
   }
 
   .archive-item {
-    padding-left: 1rem;
+    padding-left: 1.3rem;
   }
 
   .archive-entry {
