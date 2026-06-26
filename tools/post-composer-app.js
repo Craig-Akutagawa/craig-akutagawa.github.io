@@ -338,7 +338,8 @@ function parsePostDocument(fileName, source, lastModified) {
     sortTimestamp: parseCanonicalTimestamp(fields.date, fileName, lastModified),
     assetSlug: assetSlugFromFileName(fileName),
     encrypted: fields.encrypted === true || fields.encrypted === "true",
-    encrypted_data: fields.encrypted_data || ""
+    encrypted_data: fields.encrypted_data || "",
+    encrypted_excerpt: fields.encrypted_excerpt || ""
   };
 }
 
@@ -497,8 +498,25 @@ function buildMarkdown() {
     "date: " + frontMatterDate(publishInput.value)
   ];
 
-  if (excerpt) {
-    lines.push("excerpt: " + yamlString(excerpt));
+  let finalExcerpt = excerpt;
+  let finalBody = body;
+  if (password) {
+    lines.push("encrypted: true");
+    const plainTextToEncrypt = ENCRYPTED_SIG + "\n" + body;
+    const ciphertext = CryptoJS.AES.encrypt(plainTextToEncrypt, password).toString();
+    lines.push("encrypted_data: " + yamlString(ciphertext));
+    
+    if (excerpt) {
+      const encryptedExcerpt = CryptoJS.AES.encrypt(ENCRYPTED_SIG + "\n" + excerpt, password).toString();
+      lines.push("encrypted_excerpt: " + yamlString(encryptedExcerpt));
+    }
+    
+    finalExcerpt = "本文已加密保护，请点击标题输入密码访问内容。";
+    finalBody = "> 本文已加密保护，请在浏览器中输入密码访问。";
+  }
+
+  if (finalExcerpt) {
+    lines.push("excerpt: " + yamlString(finalExcerpt));
   }
 
   lines.push("lang: " + langInput.value);
@@ -507,15 +525,6 @@ function buildMarkdown() {
     state.selectedTags.forEach((tag) => {
       lines.push("  - " + yamlString(tag));
     });
-  }
-
-  let finalBody = body;
-  if (password) {
-    lines.push("encrypted: true");
-    const plainTextToEncrypt = ENCRYPTED_SIG + "\n" + body;
-    const ciphertext = CryptoJS.AES.encrypt(plainTextToEncrypt, password).toString();
-    lines.push("encrypted_data: " + yamlString(ciphertext));
-    finalBody = "> 本文已加密保护，请在浏览器中输入密码访问。";
   }
 
   lines.push("---");
@@ -1072,6 +1081,11 @@ async function openPostForEditing(fileName, options = {}) {
         decrypted = decryptContent(parsed.encrypted_data, password);
       }
       decryptedPost.body = decrypted;
+      let decryptedExcerpt = "";
+      if (parsed.encrypted_excerpt) {
+        decryptedExcerpt = decryptContent(parsed.encrypted_excerpt, password) || "";
+      }
+      decryptedPost.excerpt = decryptedExcerpt;
       postPassword = password;
     }
     decryptedPost.password = postPassword;
