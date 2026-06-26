@@ -209,6 +209,15 @@
     };
   }
 
+  function getTomorrowNineAM() {
+    const date = new Date();
+    date.setDate(date.getDate() + 1);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return year + "-" + month + "-" + day + "T09:00";
+  }
+
   function addItem(text, dueAt) {
     const trimmed = text.trim();
     if (!trimmed) {
@@ -220,6 +229,9 @@
     writeItems();
     render();
     form.reset();
+    if (dueInput) {
+      dueInput.value = getTomorrowNineAM();
+    }
     input.focus();
     setStatus("");
   }
@@ -351,6 +363,10 @@
   storageEnabled = canUseStorage();
   if (!storageEnabled) {
     setStatus("This browser cannot persist local TODO items. Changes will not survive a reload.", true);
+  }
+
+  if (dueInput) {
+    dueInput.value = getTomorrowNineAM();
   }
 
   items = readItems();
