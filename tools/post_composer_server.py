@@ -783,7 +783,7 @@ class ComposerRequestHandler(SimpleHTTPRequestHandler):
         if normalized.startswith("/assets/"):
             return Path(self._resolve_repo_path(REPO_ROOT / normalized.lstrip("/"), REPO_ROOT / "assets"))
 
-        if normalized in {"/post-composer.html", "/post-composer.css", "/post-composer-app.js", "/post-composer-renderer.js"}:
+        if normalized in {"/post-composer.html", "/post-composer.css", "/post-composer-app.js", "/post-composer-renderer.js", "/crypto-js.min.js"}:
             return Path(self._resolve_repo_path(TOOLS_DIR / normalized.lstrip("/"), TOOLS_DIR))
 
         return None

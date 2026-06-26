@@ -120,6 +120,12 @@
                     <input id="slug" name="slug" type="text" placeholder="默认自动生成">
                     <span class="field-help" id="slug-help">建议使用英文、数字 and 连字符。留空时会自动生成安全 slug。</span>
                   </label>
+
+                  <label>
+                    <span class="field-label">访问密码</span>
+                    <input id="post-password" name="post-password" type="password" placeholder="留空则不加密本篇文章">
+                    <span class="field-help">若设置密码，文章保存时将自动进行客户端 AES 加密，爬虫将无法爬取正文明文。</span>
+                  </label>
                 </div>
               </details>
 
@@ -309,6 +315,7 @@
       </div>
     </div>
 
+    <script src="./crypto-js.min.js"></script>
     <script src="./post-composer-renderer.js"></script>
     <script src="./post-composer-app.js"></script>
   </body>

@@ -35,6 +35,8 @@ const availableTagsEl = document.querySelector("#available-tags");
 const saveButton = document.querySelector("#save-post");
 const saveAndNewButton = document.querySelector("#save-and-new");
 const publishButton = document.querySelector("#publish-post");
+const passwordInput = document.querySelector("#post-password");
+const ENCRYPTED_SIG = "::ENCRYPTED::";
 const downloadButton = document.querySelector("#download-post");
 const insertLocalImageButton = document.querySelector("#insert-local-image");
 const insertRemoteImageButton = document.querySelector("#insert-remote-image");
@@ -334,8 +336,23 @@ function parsePostDocument(fileName, source, lastModified) {
     body: parts.body,
     lastModified,
     sortTimestamp: parseCanonicalTimestamp(fields.date, fileName, lastModified),
-    assetSlug: assetSlugFromFileName(fileName)
+    assetSlug: assetSlugFromFileName(fileName),
+    encrypted: fields.encrypted === true || fields.encrypted === "true",
+    encrypted_data: fields.encrypted_data || ""
   };
+}
+
+function decryptContent(ciphertext, password) {
+  try {
+    const bytes = CryptoJS.AES.decrypt(ciphertext, password);
+    const decrypted = bytes.toString(CryptoJS.enc.Utf8);
+    if (decrypted.startsWith(ENCRYPTED_SIG + "\n")) {
+      return decrypted.slice((ENCRYPTED_SIG + "\n").length);
+    }
+  } catch (e) {
+    // decryption failed
+  }
+  return null;
 }
 
 function isPostHiddenLocally(fileName) {
@@ -471,6 +488,8 @@ function buildMarkdown() {
   const title = titleInput.value.trim();
   const body = bodyInput.value.trim();
   const excerpt = buildExcerpt();
+  const password = passwordInput ? passwordInput.value.trim() : "";
+
   const lines = [
     "---",
     "layout: post",
@@ -489,9 +508,19 @@ function buildMarkdown() {
       lines.push("  - " + yamlString(tag));
     });
   }
+
+  let finalBody = body;
+  if (password) {
+    lines.push("encrypted: true");
+    const plainTextToEncrypt = ENCRYPTED_SIG + "\n" + body;
+    const ciphertext = CryptoJS.AES.encrypt(plainTextToEncrypt, password).toString();
+    lines.push("encrypted_data: " + yamlString(ciphertext));
+    finalBody = "> 本文已加密保护，请在浏览器中输入密码访问。";
+  }
+
   lines.push("---");
   lines.push("");
-  lines.push(body);
+  lines.push(finalBody);
 
   return lines.join("\n") + "\n";
 }
@@ -641,7 +670,8 @@ function captureEditorSnapshot() {
     excerpt: excerptInput.value,
     body: bodyInput.value,
     tags: state.selectedTags.slice(),
-    pendingTagInput: tagsInput.value
+    pendingTagInput: tagsInput.value,
+    password: passwordInput ? passwordInput.value : ""
   };
 }
 
@@ -662,7 +692,8 @@ function emptySnapshot() {
     excerpt: "",
     body: "",
     tags: [],
-    pendingTagInput: ""
+    pendingTagInput: "",
+    password: ""
   };
 }
 
@@ -675,7 +706,8 @@ function snapshotFromPost(post) {
     excerpt: post.excerpt || "",
     body: post.body || "",
     tags: Array.isArray(post.tags) ? post.tags.slice() : [],
-    pendingTagInput: ""
+    pendingTagInput: "",
+    password: post.password || ""
   };
 }
 
@@ -687,6 +719,9 @@ function applySnapshot(snapshot) {
   excerptInput.value = snapshot.excerpt || "";
   bodyInput.value = snapshot.body || "";
   tagsInput.value = snapshot.pendingTagInput || "";
+  if (passwordInput) {
+    passwordInput.value = snapshot.password || "";
+  }
   state.selectedTags = Array.isArray(snapshot.tags)
     ? snapshot.tags
       .map((tag) => normalizeTag(String(tag)))
@@ -1019,7 +1054,29 @@ async function openPostForEditing(fileName, options = {}) {
     if (!parsed) {
       throw new Error("文章不存在");
     }
-    const baseSnapshot = snapshotFromPost(parsed);
+    const decryptedPost = { ...parsed };
+    let postPassword = "";
+    if (parsed.encrypted) {
+      let password = prompt("该贴文已加密保护，请输入访问密码以编辑：");
+      if (password === null) {
+        setStatus("取消加载加密贴文。", "warn");
+        return false;
+      }
+      let decrypted = decryptContent(parsed.encrypted_data, password);
+      while (decrypted === null) {
+        password = prompt("密码错误，请重新输入访问密码（或点取消放弃）：");
+        if (password === null) {
+          setStatus("取消加载加密贴文。", "warn");
+          return false;
+        }
+        decrypted = decryptContent(parsed.encrypted_data, password);
+      }
+      decryptedPost.body = decrypted;
+      postPassword = password;
+    }
+    decryptedPost.password = postPassword;
+
+    const baseSnapshot = snapshotFromPost(decryptedPost);
     const draftSnapshot = loadDraftByKey(draftKeyFor(normalizedFileName));
 
     state.mode = "edit";

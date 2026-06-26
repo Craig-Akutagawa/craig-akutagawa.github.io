@@ -26,9 +26,104 @@ layout: default
         <p>仅在本地预览环境显示，点击后会打开本地发帖器并载入当前 Markdown。</p>
     </div>
 
-    {{ content }}
+    {% if page.encrypted %}
+    <style>
+    .encrypted-warning-box {
+        max-width: 480px;
+        margin: 40px auto;
+        padding: 35px 24px;
+        background: rgba(255, 255, 255, 0.85);
+        border: 1px solid rgba(24, 50, 51, 0.12);
+        border-radius: 18px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        text-align: center;
+        backdrop-filter: blur(10px);
+    }
+    .encrypted-warning-box h3 {
+        margin: 12px 0 6px;
+        color: #123f43;
+        font-size: 1.3rem;
+    }
+    .encrypted-warning-box p {
+        color: #5b7273;
+        font-size: 0.95rem;
+        margin-bottom: 20px;
+    }
+    .lock-icon {
+        font-size: 3rem;
+        line-height: 1;
+        margin-bottom: 10px;
+    }
+    .password-input-row {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+    }
+    .password-input-row input {
+        flex: 1;
+        max-width: 240px;
+        padding: 10px 14px;
+        border: 1px solid rgba(24, 50, 51, 0.16);
+        border-radius: 12px;
+        font-size: 0.95rem;
+        outline: none;
+        transition: all 0.2s ease;
+    }
+    .password-input-row input:focus {
+        border-color: #1f6b63;
+        box-shadow: 0 0 0 3px rgba(31, 107, 99, 0.15);
+    }
+    .password-input-row button {
+        background: #1f6b63;
+        color: #ffffff;
+        border: none;
+        padding: 10px 18px;
+        border-radius: 12px;
+        font-size: 0.95rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .password-input-row button:hover {
+        background: #123f43;
+        transform: translateY(-1px);
+    }
+    .decrypt-error {
+        font-size: 0.88rem;
+        margin-top: 8px;
+    }
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        20%, 60% { transform: translateX(-6px); }
+        40%, 80% { transform: translateX(6px); }
+    }
+    .shake-animation {
+        animation: shake 0.4s ease-in-out;
+        border-color: #d9534f !important;
+        box-shadow: 0 0 0 3px rgba(217, 83, 79, 0.15) !important;
+    }
+    </style>
+    <div id="encrypted-warning" class="encrypted-warning-box">
+        <div class="lock-icon">🔒</div>
+        <h3>该文章已被加密保护</h3>
+        <p>请输入访问密码以查看内容：</p>
+        <div class="password-input-row">
+            <input type="password" id="decrypt-password-input" placeholder="输入密码..." autofocus />
+            <button id="decrypt-btn">确认解密</button>
+        </div>
+        <p id="decrypt-error-msg" class="decrypt-error" style="display:none; color: #d9534f; margin-top: 8px;">密码错误，请重新输入。</p>
+    </div>
+    
+    <div id="decrypted-post-body" class="post-body" style="display: none; opacity: 0; transition: opacity 0.4s ease;"></div>
+    {% else %}
+    <div class="post-body">
+        {{ content }}
+    </div>
+    {% endif %}
 
-    {% include comments-giscus.html lang=current_lang %}
+    <div id="comments-wrapper" {% if page.encrypted %}style="display: none; opacity: 0; transition: opacity 0.4s ease;"{% endif %}>
+        {% include comments-giscus.html lang=current_lang %}
+    </div>
 </article>
 
 <script>
@@ -71,3 +166,75 @@ layout: default
     });
   })();
 </script>
+
+{% if page.encrypted %}
+<!-- Load CryptoJS from jsdelivr -->
+<script src="https://cdn.jsdelivr.net/npm/crypto-js@4.2.0/crypto-js.min.js"></script>
+<!-- Load post composer renderer -->
+<script src="{{ '/assets/js/post-composer-renderer.js' | relative_url }}"></script>
+
+<script>
+  (function () {
+    const ENCRYPTED_SIG = "::ENCRYPTED::";
+    const ciphertext = {{ page.encrypted_data | jsonify }};
+    const decryptWarning = document.getElementById("encrypted-warning");
+    const decryptedBody = document.getElementById("decrypted-post-body");
+    const commentsWrapper = document.getElementById("comments-wrapper");
+    const passwordInput = document.getElementById("decrypt-password-input");
+    const decryptBtn = document.getElementById("decrypt-btn");
+    const errorMsg = document.getElementById("decrypt-error-msg");
+
+    function doDecrypt() {
+      const password = passwordInput.value.trim();
+      if (!password) return;
+
+      try {
+        const bytes = CryptoJS.AES.decrypt(ciphertext, password);
+        const decrypted = bytes.toString(CryptoJS.enc.Utf8);
+        if (decrypted.startsWith(ENCRYPTED_SIG + "\n")) {
+          const rawMarkdown = decrypted.slice((ENCRYPTED_SIG + "\n").length);
+          // Render Markdown to HTML
+          const renderedHtml = renderMarkdown(rawMarkdown);
+          
+          // Inject into body
+          decryptedBody.innerHTML = renderedHtml;
+          
+          // Hide password card, show decrypted content and comments with fade-in animation
+          decryptWarning.style.display = "none";
+          decryptedBody.style.display = "block";
+          
+          // Trigger CSS transition
+          setTimeout(() => {
+            decryptedBody.style.opacity = "1";
+            if (commentsWrapper) {
+              commentsWrapper.style.display = "block";
+              setTimeout(() => {
+                commentsWrapper.style.opacity = "1";
+              }, 50);
+            }
+          }, 50);
+          
+          errorMsg.style.display = "none";
+          return;
+        }
+      } catch (e) {
+        // failed
+      }
+
+      // Show error, shake input box for micro-interaction
+      errorMsg.style.display = "block";
+      passwordInput.classList.add("shake-animation");
+      setTimeout(() => {
+        passwordInput.classList.remove("shake-animation");
+      }, 500);
+    }
+
+    decryptBtn.addEventListener("click", doDecrypt);
+    passwordInput.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
+        doDecrypt();
+      }
+    });
+  })();
+</script>
+{% endif %}
