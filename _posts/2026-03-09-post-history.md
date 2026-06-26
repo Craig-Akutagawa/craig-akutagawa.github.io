@@ -2,7 +2,7 @@
 layout: post
 title: "为什么上海只有百年历史，却很有文化底蕴的感觉？"
 date: 2026-03-09 18:10:00 +0800
-excerpt: "探讨城市底蕴与真实历史界面的关系：为什么上海仅有百年，却比很多“千年名城”更有底蕴？"
+excerpt: ""
 lang: zh-Hans
 tags:
   - "commentary"
