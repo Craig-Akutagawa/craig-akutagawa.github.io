@@ -120,6 +120,9 @@ const state = {
   lastRenderedBody: null,
   originalPublished: undefined,
   originalEncrypted: false,
+  originalEncryptedData: "",
+  originalEncryptedExcerpt: "",
+  isDecrypted: false,
   pendingEditFile: requestedEditFile
 };
 
@@ -488,6 +491,15 @@ function buildMarkdown() {
       lines.push("encrypted_excerpt: " + yamlString(encryptedExcerpt));
     }
     
+    finalExcerpt = "本文已加密保护，请点击标题输入密码访问内容。";
+    finalBody = "> 本文已加密保护，请在浏览器中输入密码访问。";
+  } else if (state.mode === "edit" && state.originalEncrypted && !state.isDecrypted && state.originalEncryptedData) {
+    // 保护未解密文章：用户未提供密码解密，保留原有加密密文与占位符，防止原文数据丢失
+    lines.push("encrypted: true");
+    lines.push("encrypted_data: " + yamlString(state.originalEncryptedData));
+    if (state.originalEncryptedExcerpt) {
+      lines.push("encrypted_excerpt: " + yamlString(state.originalEncryptedExcerpt));
+    }
     finalExcerpt = "本文已加密保护，请点击标题输入密码访问内容。";
     finalBody = "> 本文已加密保护，请在浏览器中输入密码访问。";
   }
@@ -868,6 +880,9 @@ function enterCreateMode({ snapshot, baseline, focus = true }) {
   state.originalAssetSlug = "";
   state.originalPublished = undefined;
   state.originalEncrypted = false;
+  state.originalEncryptedData = "";
+  state.originalEncryptedExcerpt = "";
+  state.isDecrypted = false;
 
   titleInput.value = snapshot.title || "";
   langInput.value = snapshot.lang || "zh-Hans";
@@ -962,6 +977,9 @@ async function openPostForEditing(fileName) {
     state.originalAssetSlug = post.slug;
     state.originalPublished = post.published;
     state.originalEncrypted = post.encrypted;
+    state.originalEncryptedData = post.encrypted_data || "";
+    state.originalEncryptedExcerpt = post.encrypted_excerpt || "";
+    state.isDecrypted = Boolean(initialPassword);
 
     titleInput.value = post.title;
     langInput.value = post.lang;
@@ -1102,6 +1120,10 @@ function showPublishSuccess(fileName, slug, dateValue) {
 }
 
 async function publishPost() {
+  if (state.publishing) {
+    return;
+  }
+
   const title = titleInput.value.trim();
   const body = bodyInput.value.trim();
 
@@ -1194,7 +1216,7 @@ async function publishPost() {
         lang: langInput.value,
         tags: [...state.selectedTags],
         excerpt,
-        encrypted: Boolean(passwordInput && passwordInput.value.trim()),
+        encrypted: Boolean(passwordInput && passwordInput.value.trim()) || Boolean(state.mode === "edit" && state.originalEncrypted && !state.isDecrypted),
         body: markdown,
         source: markdown,
         lastModified: Date.now()
@@ -1366,17 +1388,6 @@ function initEventListeners() {
     savePublishButton.addEventListener("click", publishPost);
   }
 
-  // Keyboard Shortcuts: Ctrl+Enter (Publish), Ctrl+S (Draft)
-  window.addEventListener("keydown", (e) => {
-    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
-      e.preventDefault();
-      publishPost();
-    } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
-      e.preventDefault();
-      flushPendingWork();
-      setStatus("草稿已保存在本地。", "success");
-    }
-  });
 
   // Inputs live preview
   [titleInput, langInput, publishInput, excerptInput, bodyInput].forEach((el) => {
@@ -1454,22 +1465,26 @@ function initEventListeners() {
       const fileName = delBtn.dataset.deletePost;
       if (window.confirm(`确定删除文章《${fileName}》吗？`)) {
         // Delete post
+        let deleteMsg = `已删除 ${fileName}`;
         if (state.engine === ENGINE_LOCAL && state.serviceReady) {
-          await fetch("/api/posts/delete", {
+          const res = await fetch("/api/posts/delete", {
             method: "POST",
             headers: { "Content-Type": "application/json", "X-Post-Composer-Token": state.requestToken },
-            body: JSON.stringify({ fileName })
+            body: JSON.stringify({ fileName, syncGit: true })
           });
+          const result = await res.json().catch(() => ({}));
+          if (result && result.message) deleteMsg = result.message;
         } else {
           const sha = state.fileShas.get(fileName);
           await fetchGhApi(`/repos/${GH_OWNER}/${GH_REPO}/contents/_posts/${encodeURIComponent(fileName)}`, {
             method: "DELETE",
             body: JSON.stringify({ message: `post: delete ${fileName}`, sha, branch: GH_BRANCH })
           });
+          deleteMsg = `已在云端删除 ${fileName}`;
         }
         await loadPostsIndex();
         if (state.originalFileName === fileName) switchToNewPost();
-        setStatus(`已删除 ${fileName}`, "warn");
+        setStatus(deleteMsg, "warn");
       }
       return;
     }
@@ -1517,13 +1532,6 @@ function initEventListeners() {
     schedulePreview();
   });
 
-  // Tag Quick Add on Enter
-  tagsInput?.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" || e.key === ",") {
-      e.preventDefault();
-      collectPendingTags();
-    }
-  });
 
   // Global Keyboard Shortcuts (Ctrl+Enter, Ctrl+S, Esc)
   document.addEventListener("keydown", (e) => {

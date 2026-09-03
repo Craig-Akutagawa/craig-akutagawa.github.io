@@ -1,12 +1,11 @@
 // Post Composer Service Worker for PWA Shell
-const CACHE_NAME = "post-composer-v3";
+const CACHE_NAME = "post-composer-v4";
 const ASSETS_TO_CACHE = [
   "./",
   "./index.html",
-  "./post-composer.html",
-  "./post-composer.css",
-  "./post-composer-app.js",
-  "./post-composer-renderer.js",
+  "./style.css",
+  "./app.js",
+  "./renderer.js",
   "./crypto-js.min.js",
   "./manifest.json",
   "./icon.svg"

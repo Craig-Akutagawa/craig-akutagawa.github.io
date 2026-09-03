@@ -170,7 +170,7 @@
         "</div>",
         '<div class="todo-actions">',
          '<button type="submit" class="button-link todo-submit todo-action todo-action-save">Save</button>',
-        '<button type="button" class="todo-action" data-action="cancel-edit">Cancel</button>',
+         '<button type="button" class="todo-action" data-action="cancel">Cancel</button>',
         '</div>',
         "</form>",
         "</li>"
@@ -341,7 +341,7 @@
       return;
     }
 
-    if (action === "cancel") {
+    if (action === "cancel" || action === "cancel-edit") {
       editingId = null;
       render();
     }

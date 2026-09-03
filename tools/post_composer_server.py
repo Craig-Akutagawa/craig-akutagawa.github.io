@@ -13,6 +13,7 @@ import signal
 import socket
 import subprocess
 import sys
+import threading
 import time
 from datetime import datetime, timezone
 from functools import partial
@@ -25,6 +26,7 @@ from urllib.request import urlopen
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 TOOLS_DIR = Path(__file__).resolve().parent
+COMPOSER_DIR = REPO_ROOT / "composer"
 POSTS_DIR = REPO_ROOT / "_posts"
 POST_ASSETS_DIR = REPO_ROOT / "assets" / "posts"
 VALID_FILE_RE = re.compile(r"^[A-Za-z0-9._-]+\.md$")
@@ -42,6 +44,7 @@ LOCAL_VISIBILITY_FILE = REPO_ROOT / "tmp" / "local-post-visibility.json"
 # 覆盖保存和删除都是不可逆的整文件操作，先往这里留一份。tmp/ 已在 .gitignore 中。
 POST_BACKUP_DIR = REPO_ROOT / "tmp" / "post-backups"
 MAX_BACKUPS_PER_POST = 10
+REPO_LOCK = threading.Lock()
 
 
 def hidden_subprocess_kwargs() -> dict[str, object]:
@@ -61,25 +64,26 @@ def run_git(args: list[str], check: bool = True, timeout: int = 90) -> subproces
     # GIT_TERMINAL_PROMPT=0 + stdin 关掉：否则凭证过期时 git 会在后台进程里
     # 等一个永远不会有人输入的用户名，整个发布就挂死在那儿。
     env = dict(os.environ, GIT_TERMINAL_PROMPT="0", GIT_OPTIONAL_LOCKS="0")
-    try:
-        return subprocess.run(
-            ["git", *args],
-            cwd=REPO_ROOT,
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            errors="replace",
-            check=check,
-            timeout=timeout,
-            stdin=subprocess.DEVNULL,
-            env=env,
-            **hidden_subprocess_kwargs(),
-        )
-    except subprocess.TimeoutExpired as error:
-        raise RuntimeError(
-            f"git {' '.join(args[:2])} 超过 {timeout} 秒没有返回，已中止。"
-            "常见原因是网络不通或远端要求输入凭证。"
-        ) from error
+    with REPO_LOCK:
+        try:
+            return subprocess.run(
+                ["git", *args],
+                cwd=REPO_ROOT,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                check=check,
+                timeout=timeout,
+                stdin=subprocess.DEVNULL,
+                env=env,
+                **hidden_subprocess_kwargs(),
+            )
+        except subprocess.TimeoutExpired as error:
+            raise RuntimeError(
+                f"git {' '.join(args[:2])} 超过 {timeout} 秒没有返回，已中止。"
+                "常见原因是网络不通或远端要求输入凭证。"
+            ) from error
 
 
 def explain_git_error(message: str) -> str:
@@ -502,6 +506,7 @@ def save_post(payload: dict[str, object]) -> dict[str, object]:
 
 def delete_post(payload: dict[str, object]) -> dict[str, object]:
     file_name = normalize_post_file_name(str(payload.get("fileName", "")))
+    sync_git = bool(payload.get("syncGit", False))
     if not POSTS_DIR.is_dir():
         raise FileNotFoundError("博客项目缺少 _posts 目录。")
     target = POSTS_DIR / file_name
@@ -527,12 +532,34 @@ def delete_post(payload: dict[str, object]) -> dict[str, object]:
         hidden_posts.discard(file_name)
         write_local_visibility(hidden_posts)
 
-    # 说清楚：只动了本地文件，线上那篇还在，要等下一次 push 才会同步
     message = f"已删除本地文件 {file_name}"
     if removed_assets:
-        message += f"，并移走了图片目录 assets/posts/{asset_slug}/"
-    message += "。备份在 tmp/post-backups/。注意：线上文章要等这次删除被提交并推送后才会消失。"
-    return {"ok": True, "message": message, "backedUp": True}
+        message += f"，并移走图片目录 assets/posts/{asset_slug}/"
+    message += "（备份在 tmp/post-backups/）"
+
+    git_synced = False
+    if sync_git:
+        del_paths = [f"_posts/{file_name}"]
+        if removed_assets:
+            del_paths.append(f"assets/posts/{asset_slug}")
+        add_res = run_git(["add", "-A", "--", *del_paths], check=False)
+        if add_res.returncode == 0:
+            commit_res = run_git(["commit", "-m", f"post: delete {file_name}", "--", *del_paths], check=False)
+            if commit_res.returncode == 0:
+                push_res = run_git(["push", "origin", "HEAD"], check=False)
+                if push_res.returncode == 0:
+                    git_synced = True
+                    message += "，并已成功推送到远程 GitHub 仓库。"
+                else:
+                    message += "。本地已提交删除，但推送远程失败：" + explain_git_error((push_res.stderr or push_res.stdout or "").strip())
+            else:
+                message += "。已暂存删除，但 Git commit 失败。"
+        else:
+            message += "。Git add 暂存失败。"
+    else:
+        message += "。注意：线上文章需等待下一次 Git 推送后才会同步。"
+
+    return {"ok": True, "message": message, "backedUp": True, "gitSynced": git_synced}
 
 
 def sanitize_image_name(original_name: str) -> str:
@@ -891,31 +918,42 @@ class ComposerRequestHandler(SimpleHTTPRequestHandler):
     def resolve_static_path(self, request_path: str) -> Path | None:
         normalized = posixpath.normpath(unquote(request_path))
 
-        if normalized in {".", "/", "/composer", "/composer/"}:
-            composer_index = REPO_ROOT / "composer" / "index.html"
+        # Root and index aliases
+        if normalized in {".", "/", "/index.html", "/composer", "/composer/", "/post-composer.html"}:
+            composer_index = COMPOSER_DIR / "index.html"
             if composer_index.exists():
                 return Path(self._resolve_repo_path(composer_index, REPO_ROOT))
-            normalized = "/post-composer.html"
 
+        # Files requested directly under /composer/
         if normalized.startswith("/composer/"):
             rel = normalized[len("/composer/"):]
-            if not rel:
-                rel = "index.html"
-            target = REPO_ROOT / "composer" / rel
-            if target.exists():
+            if not rel or rel == "index.html":
+                return Path(self._resolve_repo_path(COMPOSER_DIR / "index.html", REPO_ROOT))
+            target = COMPOSER_DIR / rel
+            if target.exists() and target.is_file():
                 return Path(self._resolve_repo_path(target, REPO_ROOT))
 
+        # Static assets under /assets/
         if normalized.startswith("/assets/"):
-            return Path(self._resolve_repo_path(REPO_ROOT / normalized.lstrip("/"), REPO_ROOT / "assets"))
+            target = REPO_ROOT / normalized.lstrip("/")
+            if target.exists() and target.is_file():
+                return Path(self._resolve_repo_path(target, REPO_ROOT / "assets"))
 
-        # Root static files (icons, manifest, sw)
-        for cand_dir in [TOOLS_DIR, REPO_ROOT / "composer"]:
-            cand = cand_dir / normalized.lstrip("/")
-            if cand.exists() and cand.is_file():
-                return Path(self._resolve_repo_path(cand, cand_dir))
+        # Legacy backward-compatibility aliases for /post-composer.*
+        legacy_aliases = {
+            "/post-composer.css": "style.css",
+            "/post-composer-app.js": "app.js",
+            "/post-composer-renderer.js": "renderer.js",
+        }
+        if normalized in legacy_aliases:
+            target = COMPOSER_DIR / legacy_aliases[normalized]
+            if target.exists() and target.is_file():
+                return Path(self._resolve_repo_path(target, REPO_ROOT))
 
-        if normalized in {"/post-composer.html", "/post-composer.css", "/post-composer-app.js", "/post-composer-renderer.js", "/crypto-js.min.js"}:
-            return Path(self._resolve_repo_path(TOOLS_DIR / normalized.lstrip("/"), TOOLS_DIR))
+        # Root static files served directly from composer/ (app.js, style.css, sw.js, manifest.json, icon.svg, etc.)
+        cand = COMPOSER_DIR / normalized.lstrip("/")
+        if cand.exists() and cand.is_file():
+            return Path(self._resolve_repo_path(cand, REPO_ROOT))
 
         return None
 
@@ -966,14 +1004,14 @@ def main() -> None:
     instance_id = args.instance_id or secrets.token_urlsafe(24)
     handler = partial(
         ComposerRequestHandler,
-        directory=str(TOOLS_DIR),
+        directory=str(COMPOSER_DIR),
         request_token=request_token,
         instance_id=instance_id,
         server_port=args.port,
     )
     server = ThreadingHTTPServer(("127.0.0.1", args.port), handler)
-    print(f"Post Composer server is running at http://127.0.0.1:{args.port}/post-composer.html")
-    print("Serving tools from", TOOLS_DIR)
+    print(f"Post Composer server is running at http://127.0.0.1:{args.port}/index.html")
+    print("Serving composer from", COMPOSER_DIR)
     try:
         server.serve_forever()
     except KeyboardInterrupt:

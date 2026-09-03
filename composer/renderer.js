@@ -108,10 +108,11 @@ function sanitizeHtml(raw) {
 
 function renderInlineMarkdown(text) {
   const tokens = [];
+  const tokenPrefix = "\x00PCTOKEN_" + Math.random().toString(36).slice(2) + "_";
 
   function stash(pattern, renderer, input) {
     return input.replace(pattern, (...args) => {
-      const token = "%%TOKEN_" + tokens.length + "%%";
+      const token = tokenPrefix + tokens.length + "\x00";
       tokens.push(renderer(...args));
       return token;
     });
@@ -150,7 +151,8 @@ function renderInlineMarkdown(text) {
   value = value.replace(/(^|[\s(])__([^_]+)__(?=$|[\s.,!?)])/g, "$1<strong>$2</strong>");
   value = value.replace(/(^|[\s(])_([^_]+)_(?=$|[\s.,!?)])/g, "$1<em>$2</em>");
 
-  value = value.replace(/%%TOKEN_(\d+)%%/g, (_, index) => tokens[Number(index)]);
+  const tokenRegex = new RegExp(tokenPrefix + "(\\d+)\\x00", "g");
+  value = value.replace(tokenRegex, (_, index) => tokens[Number(index)]);
   return value;
 }
 
